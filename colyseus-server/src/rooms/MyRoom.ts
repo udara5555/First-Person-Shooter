@@ -10,6 +10,22 @@ export class MyRoom extends Room {
         this.setState(new MyRoomState());
         console.log("ROOM CREATED:", this.roomId);
 
+        // Handle player joining the game
+        this.onMessage("joinGame", (client: Client) => {
+            // Prevent duplicate joins
+            if (this.s.players.has(client.sessionId)) {
+                console.log("PLAYER ALREADY JOINED:", client.sessionId);
+                return;
+            }
+            
+            console.log("PLAYER JOINED GAME:", client.sessionId);
+            const player = new FPSPlayer();
+            player.x = 0;
+            player.y = 0;
+            player.z = 0;
+            this.s.players.set(client.sessionId, player);
+        });
+
         this.onMessage("move", (client: Client, data: any) => {
             const player = this.s.players.get(client.sessionId);
             if (!player) return;
@@ -21,12 +37,9 @@ export class MyRoom extends Room {
     }
 
     onJoin(client: Client) {
-        console.log("JOIN:", client.sessionId);
-        const player = new FPSPlayer();
-        player.x = 0;
-        player.y = 0;
-        player.z = 0;
-        this.s.players.set(client.sessionId, player);
+        console.log("CONNECTED TO ROOM:", client.sessionId);
+        // Player connected to room but not yet joined the game
+        // They will join when they send the "joinGame" message
     }
 
     onLeave(client: Client) {

@@ -1,8 +1,8 @@
-using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Colyseus;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -12,7 +12,7 @@ public class LobbyManager : MonoBehaviour
     public TMP_InputField playerNameInput;
     public Button createRoomBtn;
     public Button joinByIdBtn;
-    public Button startGameBtn; // only visible to room creator
+    public Button startGameBtn;
 
     [Header("Scene")]
     public string gameSceneName = "Map";
@@ -30,7 +30,7 @@ public class LobbyManager : MonoBehaviour
         joinByIdBtn.onClick.AddListener(JoinRoom);
         startGameBtn.onClick.AddListener(StartGame);
 
-        startGameBtn.gameObject.SetActive(false); // hidden by default
+        startGameBtn.gameObject.SetActive(false);
     }
 
     async void CreateRoom()
@@ -46,7 +46,7 @@ public class LobbyManager : MonoBehaviour
         LobbyData.IsCreator = true;
 
         roomIdText.text = "Room ID: " + room.RoomId;
-        startGameBtn.gameObject.SetActive(true); // show start button to creator
+        startGameBtn.gameObject.SetActive(true);
 
         Debug.Log("Room created: " + room.RoomId);
     }
@@ -67,15 +67,16 @@ public class LobbyManager : MonoBehaviour
         LobbyData.IsCreator = false;
 
         roomIdText.text = "Room ID: " + room.RoomId;
-        Debug.Log("Joined room: " + room.RoomId);
+        startGameBtn.gameObject.SetActive(true);
 
-        // Load game scene immediately after joining
-        UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
+        Debug.Log("Joined room: " + room.RoomId);
     }
 
     void StartGame()
     {
         if (room == null) return;
+
+        room.Send("joinGame");
         UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
     }
 }
