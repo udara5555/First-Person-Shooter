@@ -26,5 +26,8 @@ public FPSPlayer() { }
 
 	[Type(3, "float32")]
 	public float rotY = default(float);
+
+	[Type(4, "boolean")]
+	public bool isWalking = default(bool);
 }
 

@@ -5,6 +5,7 @@ export class FPSPlayer extends Schema {
     @type("float32") y: number = 0;
     @type("float32") z: number = 0;
     @type("float32") rotY: number = 0;
+    @type("boolean") isWalking = false;
 }
 
 export class MyRoomState extends Schema {

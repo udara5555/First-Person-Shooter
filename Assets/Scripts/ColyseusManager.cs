@@ -23,12 +23,14 @@ public class ColyseusManager : MonoBehaviour
     private float sendTimer;
     private static Room<MyRoomState> passedRoom;
     private static Client passedClient;
+    private FPSController fpsController;
 
     class RemoteData
     {
         public GameObject go;
         public Vector3 targetPos;
         public Quaternion targetRot;
+        public Animator animator;
     }
     readonly Dictionary<string, RemoteData> remotes = new();
 
@@ -56,6 +58,7 @@ public class ColyseusManager : MonoBehaviour
         }
 
         Debug.Log("Connected as: " + LobbyData.PlayerName + " | Room: " + room.RoomId);
+        fpsController = localPlayer.GetComponent<FPSController>();
         HookCallbacks();
     }
 
@@ -76,11 +79,14 @@ public class ColyseusManager : MonoBehaviour
             var go = Instantiate(remotePlayerPrefab);
             go.transform.position = new Vector3(player.x, player.y, player.z);
 
+            var animator = go.GetComponent<Animator>();
+
             remotes[sessionId] = new RemoteData
             {
                 go = go,
                 targetPos = go.transform.position,
-                targetRot = Quaternion.Euler(0, player.rotY, 0)
+                targetRot = Quaternion.Euler(0, player.rotY, 0),
+                animator = animator
             };
 
             cb.OnChange(player, () =>
@@ -88,6 +94,12 @@ public class ColyseusManager : MonoBehaviour
                 if (!remotes.TryGetValue(sessionId, out var rd)) return;
                 rd.targetPos = new Vector3(player.x, player.y, player.z);
                 rd.targetRot = Quaternion.Euler(0, player.rotY, 0);
+
+                // Update animation state
+                if (rd.animator != null)
+                {
+                    rd.animator.SetBool("isWalking", player.isWalking);
+                }
             });
         });
 
@@ -103,17 +115,18 @@ public class ColyseusManager : MonoBehaviour
     {
         if (room == null || localPlayer == null) return;
 
-        // Send position
+        // Send position and animation state
         sendTimer += Time.deltaTime;
         if (sendTimer >= sendInterval)
         {
             sendTimer = 0f;
             Vector3 pos = localPlayer.position;
             float rotY = localPlayer.eulerAngles.y;
+            bool isWalking = fpsController != null ? fpsController.GetIsMoving() : false;
 
             room.Send("move", new Dictionary<string, object> {
                 { "x", pos.x }, { "y", pos.y }, { "z", pos.z },
-                { "rotY", rotY }
+                { "rotY", rotY }, { "isWalking", isWalking }
             });
         }
 

@@ -11,15 +11,23 @@ public class FPSController : MonoBehaviour
     public float mouseSensitivity = 2f;
     public float maxLookAngle = 80f;
 
+    [Header("Animation")]
+    public Animator animator;
+    
     private CharacterController cc;
     private Camera cam;
     private float verticalRotation = 0f;
     private Vector3 velocity;
+    private bool isMoving = false;
 
     void Start()
     {
         cc = GetComponent<CharacterController>();
         cam = GetComponentInChildren<Camera>();
+        
+        if (animator == null)
+            animator = GetComponent<Animator>();
+        
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -49,6 +57,9 @@ public class FPSController : MonoBehaviour
         Vector3 move = transform.right * h + transform.forward * v;
         move = move.normalized * moveSpeed;
 
+        // Check if player is moving (horizontal or vertical input)
+        isMoving = (h != 0 || v != 0) && cc.isGrounded;
+
         if (cc.isGrounded) velocity.y = -2f;
         else velocity.y += gravity * Time.deltaTime;
 
@@ -56,5 +67,21 @@ public class FPSController : MonoBehaviour
             velocity.y = jumpForce;
 
         cc.Move((move + velocity) * Time.deltaTime);
+        
+        // Trigger animation
+        UpdateAnimation();
+    }
+
+    void UpdateAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isWalking", isMoving);
+        }
+    }
+
+    public bool GetIsMoving()
+    {
+        return isMoving;
     }
 }
