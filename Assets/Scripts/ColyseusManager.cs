@@ -21,6 +21,8 @@ public class ColyseusManager : MonoBehaviour
     private Client client;
     private Room<MyRoomState> room;
     private float sendTimer;
+    private static Room<MyRoomState> passedRoom;
+    private static Client passedClient;
 
     class RemoteData
     {
@@ -36,17 +38,31 @@ public class ColyseusManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    async void Start()
+    void Start()
     {
-        client = new Client(serverUrl);
-
-        if (LobbyData.IsCreator)
-            room = await client.JoinById<MyRoomState>(LobbyData.RoomId);
+        // Use the passed room if available, otherwise create new connection
+        if (passedRoom != null)
+        {
+            room = passedRoom;
+            client = passedClient;
+            passedRoom = null;
+            passedClient = null;
+            Debug.Log("Using existing room connection: " + room.RoomId);
+        }
         else
-            room = await client.JoinById<MyRoomState>(LobbyData.RoomId);
+        {
+            Debug.LogError("No room passed to ColyseusManager!");
+            return;
+        }
 
-        Debug.Log("Joined as: " + LobbyData.PlayerName + " | Room: " + room.RoomId);
+        Debug.Log("Connected as: " + LobbyData.PlayerName + " | Room: " + room.RoomId);
         HookCallbacks();
+    }
+
+    public static void SetRoom(Room<MyRoomState> newRoom, Client newClient)
+    {
+        passedRoom = newRoom;
+        passedClient = newClient;
     }
 
     void HookCallbacks()
@@ -85,8 +101,6 @@ public class ColyseusManager : MonoBehaviour
 
     void Update()
     {
-
-
         if (room == null || localPlayer == null) return;
 
         // Send position

@@ -3,6 +3,7 @@ using TMPro;
 using Colyseus;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -77,6 +78,10 @@ public class LobbyManager : MonoBehaviour
         if (room == null) return;
 
         room.Send("joinGame");
-        UnityEngine.SceneManagement.SceneManager.LoadScene(gameSceneName);
+
+        // Pass the room to ColyseusManager before loading scene
+        ColyseusManager.SetRoom(room, client);
+
+        SceneManager.LoadScene(gameSceneName);
     }
 }
