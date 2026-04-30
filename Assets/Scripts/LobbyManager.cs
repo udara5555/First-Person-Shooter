@@ -23,7 +23,7 @@ public class LobbyManager : MonoBehaviour
 
     void Start()
     {
-        client = new Client(ServerConfig.ServerUrl);
+        client = new Client(ServerConfig.GetServerUrl());
         playerNameInput.text = "Player_" + Random.Range(1000, 9999);
 
         createRoomBtn.onClick.AddListener(CreateRoom);

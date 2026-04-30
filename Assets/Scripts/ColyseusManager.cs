@@ -46,6 +46,7 @@ public class ColyseusManager : MonoBehaviour
             passedRoom = null;
             passedClient = null;
             Debug.Log("Using existing room connection: " + room.RoomId);
+            Debug.Log("Server URL: " + ServerConfig.GetServerUrl());
         }
         else
         {

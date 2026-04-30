@@ -1,9 +1,27 @@
 using UnityEngine;
 
-public static class ServerConfig
+public class ServerConfig : MonoBehaviour
 {
-    public static string ServerUrl = "ws://127.0.0.1:2567";
+    public static ServerConfig Instance { get; private set; }
 
-    // Change this to your Render URL when deploying
-    // Example: "ws://your-app.onrender.com"
+    [SerializeField]
+    public string serverUrl = "ws://127.0.0.1:2567";
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public static string GetServerUrl()
+    {
+        return Instance != null ? Instance.serverUrl : "ws://127.0.0.1:2567";
+    }
 }
