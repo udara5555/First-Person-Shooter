@@ -7,10 +7,6 @@ public class ColyseusManager : MonoBehaviour
 {
     public static ColyseusManager Instance;
 
-    [Header("Server")]
-    public string serverUrl = "ws://127.0.0.1:2567";
-    public string roomName = "my_room";
-
     [Header("Scene Refs")]
     public Transform localPlayer;
     public GameObject remotePlayerPrefab;

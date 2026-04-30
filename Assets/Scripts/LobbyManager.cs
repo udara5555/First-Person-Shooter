@@ -20,11 +20,10 @@ public class LobbyManager : MonoBehaviour
 
     private Client client;
     private Room<MyRoomState> room;
-    private string serverUrl = "ws://127.0.0.1:2567";
 
     void Start()
     {
-        client = new Client(serverUrl);
+        client = new Client(ServerConfig.ServerUrl);
         playerNameInput.text = "Player_" + Random.Range(1000, 9999);
 
         createRoomBtn.onClick.AddListener(CreateRoom);
