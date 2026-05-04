@@ -14,6 +14,9 @@ public class FPSController : MonoBehaviour
     [Header("Animation")]
     public Animator animator;
 
+    [Header("Gun")]
+    public Gun gun;
+
     private CharacterController cc;
     private Camera cam;
     private float verticalRotation = 0f;
@@ -27,6 +30,9 @@ public class FPSController : MonoBehaviour
 
         if (animator == null)
             animator = GetComponent<Animator>();
+
+        if (gun == null)
+            gun = GetComponentInChildren<Gun>();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
