@@ -33,6 +33,7 @@ export class MyRoom extends Room {
             player.y = data.y ?? player.y;
             player.z = data.z ?? player.z;
             player.rotY = data.rotY ?? player.rotY;
+            player.isWalking = data.isWalking ?? player.isWalking;
         });
     }
 

@@ -27,6 +27,7 @@ public class ColyseusManager : MonoBehaviour
         public Vector3 targetPos;
         public Quaternion targetRot;
         public Animator animator;
+        public bool lastIsWalking = false;
     }
     readonly Dictionary<string, RemoteData> remotes = new();
 
@@ -77,25 +78,44 @@ public class ColyseusManager : MonoBehaviour
             go.transform.position = new Vector3(player.x, player.y, player.z);
 
             var animator = go.GetComponent<Animator>();
+            if (animator == null)
+            {
+                Debug.LogWarning($"Remote player {sessionId} instantiated without an Animator component!");
+            }
 
             remotes[sessionId] = new RemoteData
             {
                 go = go,
                 targetPos = go.transform.position,
                 targetRot = Quaternion.Euler(0, player.rotY, 0),
-                animator = animator
+                animator = animator,
+                lastIsWalking = player.isWalking
             };
 
+            // Set initial animation state
+            if (animator != null)
+            {
+                animator.SetBool("isWalking", player.isWalking);
+                Debug.Log($"Remote player {sessionId} spawned with isWalking: {player.isWalking}");
+            }
+
+            // Subscribe to property changes
             cb.OnChange(player, () =>
             {
                 if (!remotes.TryGetValue(sessionId, out var rd)) return;
+
+                // Update position
                 rd.targetPos = new Vector3(player.x, player.y, player.z);
+
+                // Update rotation
                 rd.targetRot = Quaternion.Euler(0, player.rotY, 0);
 
                 // Update animation state
-                if (rd.animator != null)
+                if (rd.animator != null && rd.lastIsWalking != player.isWalking)
                 {
                     rd.animator.SetBool("isWalking", player.isWalking);
+                    rd.lastIsWalking = player.isWalking;
+                    Debug.Log($"Remote player {sessionId} isWalking changed to: {player.isWalking}");
                 }
             });
         });

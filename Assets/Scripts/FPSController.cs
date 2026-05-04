@@ -13,7 +13,7 @@ public class FPSController : MonoBehaviour
 
     [Header("Animation")]
     public Animator animator;
-    
+
     private CharacterController cc;
     private Camera cam;
     private float verticalRotation = 0f;
@@ -24,10 +24,10 @@ public class FPSController : MonoBehaviour
     {
         cc = GetComponent<CharacterController>();
         cam = GetComponentInChildren<Camera>();
-        
+
         if (animator == null)
             animator = GetComponent<Animator>();
-        
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -67,7 +67,7 @@ public class FPSController : MonoBehaviour
             velocity.y = jumpForce;
 
         cc.Move((move + velocity) * Time.deltaTime);
-        
+
         // Trigger animation
         UpdateAnimation();
     }
