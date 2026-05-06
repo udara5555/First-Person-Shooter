@@ -1183,7 +1183,11 @@ MonoBehaviour:
   shootPoint: {fileID: 725871478432616747}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 0}
+  bulletImpactPrefab: {fileID: 0}
+  impactMarkScale: 0.1
   animator: {fileID: 0}
+  crosshair: {fileID: 0}
+  mainCamera: {fileID: 0}
 --- !u!1 &7252914203346907718
 GameObject:
   m_ObjectHideFlags: 0

@@ -41,6 +41,12 @@ public class Health : MonoBehaviour
         if (deathEffect != null)
             Instantiate(deathEffect, transform.position, transform.rotation);
 
+        // Notify ColyseusManager that local player died
+        if (ColyseusManager.Instance != null)
+        {
+            ColyseusManager.Instance.OnLocalPlayerDied();
+        }
+
         // Destroy the gameobject
         Destroy(gameObject);
     }

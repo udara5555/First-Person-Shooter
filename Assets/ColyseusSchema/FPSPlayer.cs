@@ -29,5 +29,11 @@ public FPSPlayer() { }
 
 	[Type(4, "boolean")]
 	public bool isWalking = default(bool);
+
+	[Type(5, "float32")]
+	public float health = default(float);
+
+	[Type(6, "float32")]
+	public float maxHealth = default(float);
 }
 

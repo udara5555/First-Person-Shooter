@@ -10,9 +10,7 @@ export class MyRoom extends Room {
         this.setState(new MyRoomState());
         console.log("ROOM CREATED:", this.roomId);
 
-        // Handle player joining the game
         this.onMessage("joinGame", (client: Client) => {
-            // Prevent duplicate joins
             if (this.s.players.has(client.sessionId)) {
                 console.log("PLAYER ALREADY JOINED:", client.sessionId);
                 return;
@@ -35,12 +33,41 @@ export class MyRoom extends Room {
             player.rotY = data.rotY ?? player.rotY;
             player.isWalking = data.isWalking ?? player.isWalking;
         });
+
+        this.onMessage("damage", (client: Client, data: any) => {
+            const targetPlayer = this.s.players.get(data.targetPlayerId);
+            if (!targetPlayer) return;
+            
+            const damageAmount = Math.max(0, data.damage);
+            targetPlayer.health = Math.max(0, targetPlayer.health - damageAmount);
+            
+            // Broadcast damage event
+            this.broadcast("playerDamaged", {
+                playerId: data.targetPlayerId,
+                health: targetPlayer.health,
+                damage: damageAmount
+            });
+
+            // Check if player died
+            if (targetPlayer.health <= 0) {
+                console.log("PLAYER DIED:", data.targetPlayerId);
+                
+                // Broadcast player death to all clients
+                this.broadcast("playerDied", {
+                    playerId: data.targetPlayerId
+                });
+
+                // Remove player from room after a short delay
+                setTimeout(() => {
+                    this.s.players.delete(data.targetPlayerId);
+                    console.log("PLAYER REMOVED FROM ROOM:", data.targetPlayerId);
+                }, 500);
+            }
+        });
     }
 
     onJoin(client: Client) {
         console.log("CONNECTED TO ROOM:", client.sessionId);
-        // Player connected to room but not yet joined the game
-        // They will join when they send the "joinGame" message
     }
 
     onLeave(client: Client) {

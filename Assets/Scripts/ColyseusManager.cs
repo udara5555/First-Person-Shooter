@@ -2,6 +2,7 @@ using Colyseus;
 using Colyseus.Schema;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ColyseusManager : MonoBehaviour
 {
@@ -20,6 +21,7 @@ public class ColyseusManager : MonoBehaviour
     private static Room<MyRoomState> passedRoom;
     private static Client passedClient;
     private FPSController fpsController;
+    private Health localPlayerHealth;
 
     class RemoteData
     {
@@ -28,6 +30,8 @@ public class ColyseusManager : MonoBehaviour
         public Quaternion targetRot;
         public Animator animator;
         public bool lastIsWalking = false;
+        public string sessionId;
+        public float lastHealth;
     }
     readonly Dictionary<string, RemoteData> remotes = new();
 
@@ -39,7 +43,6 @@ public class ColyseusManager : MonoBehaviour
 
     void Start()
     {
-        // Use the passed room if available, otherwise create new connection
         if (passedRoom != null)
         {
             room = passedRoom;
@@ -57,6 +60,7 @@ public class ColyseusManager : MonoBehaviour
 
         Debug.Log("Connected as: " + LobbyData.PlayerName + " | Room: " + room.RoomId);
         fpsController = localPlayer.GetComponent<FPSController>();
+        localPlayerHealth = localPlayer.GetComponent<Health>();
         HookCallbacks();
     }
 
@@ -64,6 +68,17 @@ public class ColyseusManager : MonoBehaviour
     {
         passedRoom = newRoom;
         passedClient = newClient;
+    }
+
+    public Room<MyRoomState> GetRoom()
+    {
+        return room;
+    }
+
+    public void OnLocalPlayerDied()
+    {
+        Debug.Log("Local player died! Returning to lobby...");
+        ReturnToLobby();
     }
 
     void HookCallbacks()
@@ -76,6 +91,8 @@ public class ColyseusManager : MonoBehaviour
 
             var go = Instantiate(remotePlayerPrefab);
             go.transform.position = new Vector3(player.x, player.y, player.z);
+            go.tag = "RemotePlayer";
+            go.name = $"RemotePlayer_{sessionId}";
 
             var animator = go.GetComponent<Animator>();
             if (animator == null)
@@ -83,39 +100,48 @@ public class ColyseusManager : MonoBehaviour
                 Debug.LogWarning($"Remote player {sessionId} instantiated without an Animator component!");
             }
 
+            var remoteComponent = go.AddComponent<RemotePlayerComponent>();
+            remoteComponent.SessionId = sessionId;
+
             remotes[sessionId] = new RemoteData
             {
                 go = go,
                 targetPos = go.transform.position,
                 targetRot = Quaternion.Euler(0, player.rotY, 0),
                 animator = animator,
-                lastIsWalking = player.isWalking
+                lastIsWalking = player.isWalking,
+                sessionId = sessionId,
+                lastHealth = player.health
             };
 
-            // Set initial animation state
             if (animator != null)
             {
                 animator.SetBool("isWalking", player.isWalking);
                 Debug.Log($"Remote player {sessionId} spawned with isWalking: {player.isWalking}");
             }
 
-            // Subscribe to property changes
             cb.OnChange(player, () =>
             {
                 if (!remotes.TryGetValue(sessionId, out var rd)) return;
 
-                // Update position
                 rd.targetPos = new Vector3(player.x, player.y, player.z);
-
-                // Update rotation
                 rd.targetRot = Quaternion.Euler(0, player.rotY, 0);
 
-                // Update animation state
                 if (rd.animator != null && rd.lastIsWalking != player.isWalking)
                 {
                     rd.animator.SetBool("isWalking", player.isWalking);
                     rd.lastIsWalking = player.isWalking;
                     Debug.Log($"Remote player {sessionId} isWalking changed to: {player.isWalking}");
+                }
+
+                if (rd.lastHealth != player.health)
+                {
+                    Debug.Log($"Remote player {sessionId} health changed from {rd.lastHealth} to {player.health}");
+                    rd.lastHealth = player.health;
+
+                    var remoteComponent = rd.go.GetComponent<RemotePlayerComponent>();
+                    if (remoteComponent != null)
+                        remoteComponent.UpdateHealth(player.health, player.maxHealth);
                 }
             });
         });
@@ -126,13 +152,56 @@ public class ColyseusManager : MonoBehaviour
                 Destroy(rd.go);
             remotes.Remove(sessionId);
         });
+
+        // Listen for player death broadcast
+        room.OnMessage<PlayerDeathMessage>("playerDied", (message) =>
+        {
+            Debug.Log($"Player died: {message.playerId}");
+
+            // If local player died, return to lobby
+            if (message.playerId == room.SessionId)
+            {
+                Debug.Log("Local player died! Returning to lobby...");
+                ReturnToLobby();
+            }
+            // Otherwise remove remote player from scene
+            else if (remotes.TryGetValue(message.playerId, out var rd))
+            {
+                if (rd.go != null)
+                    Destroy(rd.go);
+                remotes.Remove(message.playerId);
+            }
+        });
+
+        room.OnMessage<PlayerDamagedMessage>("playerDamaged", (message) =>
+        {
+            Debug.Log($"Player damaged: ID={message.playerId}, Health={message.health}, Damage={message.damage}");
+        });
+    }
+
+    void ReturnToLobby()
+    {
+        Time.timeScale = 1f; // Ensure time is running
+
+        // Leave the room
+        if (room != null)
+        {
+            room.Leave();
+            room = null;
+        }
+
+        // Clear remotes
+        remotes.Clear();
+
+        // Load lobby scene
+        Debug.Log("Loading Lobby scene...");
+        SceneManager.LoadScene("Lobby");
     }
 
     void Update()
     {
         if (room == null || localPlayer == null) return;
 
-        // Send position and animation state
         sendTimer += Time.deltaTime;
         if (sendTimer >= sendInterval)
         {
@@ -147,12 +216,26 @@ public class ColyseusManager : MonoBehaviour
             });
         }
 
-        // Interpolate remotes
         foreach (var kv in remotes)
         {
             var r = kv.Value;
-            r.go.transform.position = Vector3.Lerp(r.go.transform.position, r.targetPos, Time.deltaTime * positionLerp);
-            r.go.transform.rotation = Quaternion.Lerp(r.go.transform.rotation, r.targetRot, Time.deltaTime * positionLerp);
+            if (r.go != null)
+            {
+                r.go.transform.position = Vector3.Lerp(r.go.transform.position, r.targetPos, Time.deltaTime * positionLerp);
+                r.go.transform.rotation = Quaternion.Lerp(r.go.transform.rotation, r.targetRot, Time.deltaTime * positionLerp);
+            }
         }
     }
+}
+
+public class PlayerDamagedMessage
+{
+    public string playerId;
+    public float health;
+    public float damage;
+}
+
+public class PlayerDeathMessage
+{
+    public string playerId;
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -9,10 +10,10 @@ public class Gun : MonoBehaviour
     public float shootRange = 100f;
 
     [Header("Effects")]
-    public Transform shootPoint; // Where bullets spawn from
+    public Transform shootPoint;
     public GameObject muzzleFlash;
     public AudioClip shootSound;
-    public GameObject bulletImpactPrefab; // Impact mark prefab
+    public GameObject bulletImpactPrefab;
     public float impactMarkScale = 2f;
 
     [Header("Animation")]
@@ -42,7 +43,6 @@ public class Gun : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        // Debug check
         if (bulletImpactPrefab == null)
             Debug.LogWarning("bulletImpactPrefab is not assigned in Gun script!");
     }
@@ -95,21 +95,60 @@ public class Gun : MonoBehaviour
             // Create bullet impact mark
             CreateImpactMark(hit);
 
-            // Deal damage if target has health
+            // Check if target has Health component (local player)
             var health = hit.collider.GetComponent<Health>();
             if (health != null)
             {
                 health.TakeDamage(damage);
-
-                // Flash crosshair on hit
-                if (crosshair != null)
-                    crosshair.OnHit();
+                Debug.Log($"Local player hit for {damage} damage");
             }
+            else
+            {
+                // Check if it's a remote player
+                var remoteTag = hit.collider.tag;
+                if (remoteTag == "RemotePlayer" || hit.collider.name.Contains("Remote"))
+                {
+                    SendDamageToRemotePlayer(hit.collider.gameObject);
+                    Debug.Log($"Remote player hit, sending damage event");
+                }
+            }
+
+            // Flash crosshair on hit
+            if (crosshair != null)
+                crosshair.OnHit();
         }
         else
         {
             Debug.Log("Raycast missed!");
         }
+    }
+
+    void SendDamageToRemotePlayer(GameObject targetPlayer)
+    {
+        if (ColyseusManager.Instance == null || ColyseusManager.Instance.GetRoom() == null)
+        {
+            Debug.LogError("ColyseusManager not available!");
+            return;
+        }
+
+        // Send damage message to server
+        ColyseusManager.Instance.GetRoom().Send("damage", new Dictionary<string, object>
+        {
+            { "targetPlayerId", GetRemotePlayerSessionId(targetPlayer) },
+            { "damage", damage }
+        });
+    }
+
+    string GetRemotePlayerSessionId(GameObject targetPlayer)
+    {
+        // This assumes you store sessionId on the remote player GameObject
+        var remoteComponent = targetPlayer.GetComponent<RemotePlayerComponent>();
+        if (remoteComponent != null)
+            return remoteComponent.SessionId;
+
+        // Fallback: Search in remotes dictionary (you'll need to expose this)
+        // Or store sessionId as a tag/name
+        return "unknown";
     }
 
     void CreateImpactMark(RaycastHit hit)
@@ -120,22 +159,14 @@ public class Gun : MonoBehaviour
             return;
         }
 
-        // Position the impact at the hit point (slightly offset from surface)
         Vector3 impactPosition = hit.point + hit.normal * 0.01f;
-
-        // Rotate to face the surface (plane faces outward)
         Quaternion impactRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
-        // Create the impact mark in world space
         var impact = Instantiate(bulletImpactPrefab, impactPosition, impactRotation);
-
-        // Set scale - the prefab is 0.01, so we scale from that base
-        // impactMarkScale of 2 = 0.02 world units
         impact.transform.localScale = Vector3.one * impactMarkScale;
 
         Debug.Log($"Impact created at {impactPosition} on {hit.collider.gameObject.name}");
 
-        // Add BulletImpact component if it doesn't exist
         if (impact.GetComponent<BulletImpact>() == null)
             impact.AddComponent<BulletImpact>();
     }
