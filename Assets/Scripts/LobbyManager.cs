@@ -14,6 +14,7 @@ public class LobbyManager : MonoBehaviour
     public Button createRoomBtn;
     public Button joinByIdBtn;
     public Button startGameBtn;
+    public Button copyCodeBtn;
 
     [Header("Scene")]
     public string gameSceneName = "Map";
@@ -29,8 +30,10 @@ public class LobbyManager : MonoBehaviour
         createRoomBtn.onClick.AddListener(CreateRoom);
         joinByIdBtn.onClick.AddListener(JoinRoom);
         startGameBtn.onClick.AddListener(StartGame);
+        copyCodeBtn.onClick.AddListener(CopyRoomId);
 
         startGameBtn.gameObject.SetActive(false);
+        copyCodeBtn.gameObject.SetActive(false);
     }
 
     async void CreateRoom()
@@ -47,6 +50,7 @@ public class LobbyManager : MonoBehaviour
 
         roomIdText.text = "Room ID: " + room.RoomId;
         startGameBtn.gameObject.SetActive(true);
+        copyCodeBtn.gameObject.SetActive(true);
 
         Debug.Log("Room created: " + room.RoomId);
     }
@@ -68,6 +72,7 @@ public class LobbyManager : MonoBehaviour
 
         roomIdText.text = "Room ID: " + room.RoomId;
         startGameBtn.gameObject.SetActive(true);
+        copyCodeBtn.gameObject.SetActive(true);
 
         Debug.Log("Joined room: " + room.RoomId);
     }
@@ -82,5 +87,13 @@ public class LobbyManager : MonoBehaviour
         ColyseusManager.SetRoom(room, client);
 
         SceneManager.LoadScene(gameSceneName);
+    }
+
+    void CopyRoomId()
+    {
+        if (room == null) return;
+
+        GUIUtility.systemCopyBuffer = room.RoomId;
+        Debug.Log("Room ID copied to clipboard: " + room.RoomId);
     }
 }
