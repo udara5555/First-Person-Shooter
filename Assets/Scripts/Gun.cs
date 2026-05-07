@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -16,6 +15,13 @@ public class Gun : MonoBehaviour
     public GameObject bulletImpactPrefab;
     public float impactMarkScale = 2f;
 
+    [Header("ADS (Aim Down Sight)")]
+    public float adsZoom = 40f; // Zoomed FOV
+    public float normalZoom = 60f; // Normal FOV
+    public float adsSpeed = 10f; // How fast to zoom
+    public Vector3 adsPosition = new Vector3(0.3f, -0.2f, 0.5f); // Gun position when ADS
+    public Vector3 normalPosition = Vector3.zero; // Gun position when not ADS
+
     [Header("Animation")]
     public Animator animator;
 
@@ -27,6 +33,9 @@ public class Gun : MonoBehaviour
 
     private float shootCooldown = 0f;
     private AudioSource audioSource;
+    private bool isAiming = false;
+    private float targetFOV;
+    private float currentFOV;
 
     void Start()
     {
@@ -45,16 +54,55 @@ public class Gun : MonoBehaviour
 
         if (bulletImpactPrefab == null)
             Debug.LogWarning("bulletImpactPrefab is not assigned in Gun script!");
+
+        // Set initial FOV
+        currentFOV = normalZoom;
+        targetFOV = normalZoom;
+        if (mainCamera != null)
+            mainCamera.fieldOfView = currentFOV;
     }
 
     void Update()
     {
+        // Handle ADS
+        HandleADS();
+
         shootCooldown -= Time.deltaTime;
 
         if (Input.GetMouseButton(0) && shootCooldown <= 0)
         {
             Shoot();
             shootCooldown = fireRate;
+        }
+    }
+
+    void HandleADS()
+    {
+        isAiming = Input.GetMouseButton(1); // Right mouse button
+
+        if (isAiming)
+        {
+            targetFOV = adsZoom;
+        }
+        else
+        {
+            targetFOV = normalZoom;
+        }
+
+        // Smoothly transition FOV
+        currentFOV = Mathf.Lerp(currentFOV, targetFOV, Time.deltaTime * adsSpeed);
+        if (mainCamera != null)
+            mainCamera.fieldOfView = currentFOV;
+
+        // Smoothly move gun position
+        Vector3 targetPosition = isAiming ? adsPosition : normalPosition;
+        transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * adsSpeed);
+
+        // Update crosshair visibility
+        if (crosshair != null)
+        {
+            // You can make crosshair smaller when aiming
+            crosshair.SetAiming(isAiming);
         }
     }
 
@@ -95,60 +143,21 @@ public class Gun : MonoBehaviour
             // Create bullet impact mark
             CreateImpactMark(hit);
 
-            // Check if target has Health component (local player)
+            // Deal damage if target has health
             var health = hit.collider.GetComponent<Health>();
             if (health != null)
             {
                 health.TakeDamage(damage);
-                Debug.Log($"Local player hit for {damage} damage");
-            }
-            else
-            {
-                // Check if it's a remote player
-                var remoteTag = hit.collider.tag;
-                if (remoteTag == "RemotePlayer" || hit.collider.name.Contains("Remote"))
-                {
-                    SendDamageToRemotePlayer(hit.collider.gameObject);
-                    Debug.Log($"Remote player hit, sending damage event");
-                }
-            }
 
-            // Flash crosshair on hit
-            if (crosshair != null)
-                crosshair.OnHit();
+                // Flash crosshair on hit
+                if (crosshair != null)
+                    crosshair.OnHit();
+            }
         }
         else
         {
             Debug.Log("Raycast missed!");
         }
-    }
-
-    void SendDamageToRemotePlayer(GameObject targetPlayer)
-    {
-        if (ColyseusManager.Instance == null || ColyseusManager.Instance.GetRoom() == null)
-        {
-            Debug.LogError("ColyseusManager not available!");
-            return;
-        }
-
-        // Send damage message to server
-        ColyseusManager.Instance.GetRoom().Send("damage", new Dictionary<string, object>
-        {
-            { "targetPlayerId", GetRemotePlayerSessionId(targetPlayer) },
-            { "damage", damage }
-        });
-    }
-
-    string GetRemotePlayerSessionId(GameObject targetPlayer)
-    {
-        // This assumes you store sessionId on the remote player GameObject
-        var remoteComponent = targetPlayer.GetComponent<RemotePlayerComponent>();
-        if (remoteComponent != null)
-            return remoteComponent.SessionId;
-
-        // Fallback: Search in remotes dictionary (you'll need to expose this)
-        // Or store sessionId as a tag/name
-        return "unknown";
     }
 
     void CreateImpactMark(RaycastHit hit)
@@ -159,15 +168,27 @@ public class Gun : MonoBehaviour
             return;
         }
 
+        // Position the impact at the hit point (slightly offset from surface)
         Vector3 impactPosition = hit.point + hit.normal * 0.01f;
+
+        // Rotate to face the surface (plane faces outward)
         Quaternion impactRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
+        // Create the impact mark in world space
         var impact = Instantiate(bulletImpactPrefab, impactPosition, impactRotation);
+
+        // Set scale - the prefab is 0.01, so we scale from that base
         impact.transform.localScale = Vector3.one * impactMarkScale;
 
         Debug.Log($"Impact created at {impactPosition} on {hit.collider.gameObject.name}");
 
+        // Add BulletImpact component if it doesn't exist
         if (impact.GetComponent<BulletImpact>() == null)
             impact.AddComponent<BulletImpact>();
+    }
+
+    public bool IsAiming()
+    {
+        return isAiming;
     }
 }

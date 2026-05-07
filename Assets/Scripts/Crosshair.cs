@@ -9,7 +9,13 @@ public class Crosshair : MonoBehaviour
     public Color hitColor = Color.red;
     public float hitDuration = 0.1f;
 
+    [Header("ADS")]
+    public float normalScale = 1f;
+    public float adsScale = 0.5f; // Smaller when aiming
+    public float scaleSpeed = 5f;
+
     private float hitTimer = 0f;
+    private Vector3 targetScale = Vector3.one;
 
     void Start()
     {
@@ -21,6 +27,7 @@ public class Crosshair : MonoBehaviour
         if (crosshairImage != null)
         {
             crosshairImage.color = normalColor;
+            targetScale = Vector3.one * normalScale;
         }
     }
 
@@ -36,6 +43,16 @@ public class Crosshair : MonoBehaviour
                 ResetCrosshair();
             }
         }
+
+        // Smoothly scale crosshair
+        if (crosshairImage != null)
+        {
+            crosshairImage.transform.localScale = Vector3.Lerp(
+                crosshairImage.transform.localScale,
+                targetScale,
+                Time.deltaTime * scaleSpeed
+            );
+        }
     }
 
     public void OnHit()
@@ -45,6 +62,11 @@ public class Crosshair : MonoBehaviour
         {
             crosshairImage.color = hitColor;
         }
+    }
+
+    public void SetAiming(bool isAiming)
+    {
+        targetScale = Vector3.one * (isAiming ? adsScale : normalScale);
     }
 
     void ResetCrosshair()
