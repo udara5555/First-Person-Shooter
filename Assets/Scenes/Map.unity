@@ -904,7 +904,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &541862624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2693,6 +2693,7 @@ GameObject:
   - component: {fileID: 6689853958293775907}
   - component: {fileID: 2790560150312397463}
   - component: {fileID: 5394742386038908851}
+  - component: {fileID: 6689853958293775908}
   m_Layer: 0
   m_Name: player
   m_TagString: Untagged
@@ -3933,6 +3934,22 @@ MonoBehaviour:
   maxLookAngle: 80
   animator: {fileID: 0}
   gun: {fileID: 5280876724719616187}
+--- !u!114 &6689853958293775908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 61553168828785746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 396af4983e99cf149be213a09e9958c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkinApplier
+  skin1Material: {fileID: 2100000, guid: 4fc4de6a0666cc84d8807bb11de56956, type: 2}
+  skin2Material: {fileID: 2100000, guid: 31eb974ff63bfac478ab4dc1fcc3e6b0, type: 2}
+  armsRenderer: {fileID: 8814676116733490001}
+  bodyRenderer: {fileID: 9041596754117809020}
 --- !u!4 &6896499546028775653
 Transform:
   m_ObjectHideFlags: 0
@@ -4256,7 +4273,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6478536213147159724, guid: 7a419f78b18e44b4bac6fbbd37d8efde, type: 3}
+  - {fileID: 2100000, guid: 31eb974ff63bfac478ab4dc1fcc3e6b0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4396,7 +4413,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6478536213147159724, guid: 7a419f78b18e44b4bac6fbbd37d8efde, type: 3}
+  - {fileID: 2100000, guid: 31eb974ff63bfac478ab4dc1fcc3e6b0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

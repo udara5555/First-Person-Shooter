@@ -39,9 +39,11 @@ public class LobbyManager : MonoBehaviour
     async void CreateRoom()
     {
         string playerName = playerNameInput.text.Trim();
+        string selectedSkin = SkinData.GetSkinName(SkinData.SelectedSkin);
 
         room = await client.Create<MyRoomState>("my_room", new Dictionary<string, object> {
-            { "playerName", playerName }
+            { "playerName", playerName },
+            { "skin", selectedSkin }
         });
 
         LobbyData.RoomId = room.RoomId;
@@ -52,18 +54,20 @@ public class LobbyManager : MonoBehaviour
         startGameBtn.gameObject.SetActive(true);
         copyCodeBtn.gameObject.SetActive(true);
 
-        Debug.Log("Room created: " + room.RoomId);
+        Debug.Log("Room created: " + room.RoomId + " | Skin: " + selectedSkin);
     }
 
     async void JoinRoom()
     {
         string code = roomIdInput.text.Trim();
         string playerName = playerNameInput.text.Trim();
+        string selectedSkin = SkinData.GetSkinName(SkinData.SelectedSkin);
 
         if (string.IsNullOrEmpty(code)) { Debug.LogError("Enter a room ID"); return; }
 
         room = await client.JoinById<MyRoomState>(code, new Dictionary<string, object> {
-            { "playerName", playerName }
+            { "playerName", playerName },
+            { "skin", selectedSkin }
         });
 
         LobbyData.RoomId = room.RoomId;
@@ -74,7 +78,7 @@ public class LobbyManager : MonoBehaviour
         startGameBtn.gameObject.SetActive(true);
         copyCodeBtn.gameObject.SetActive(true);
 
-        Debug.Log("Joined room: " + room.RoomId);
+        Debug.Log("Joined room: " + room.RoomId + " | Skin: " + selectedSkin);
     }
 
     void StartGame()
