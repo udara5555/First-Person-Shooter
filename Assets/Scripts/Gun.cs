@@ -94,7 +94,7 @@ public class Gun : MonoBehaviour
             // Create bullet impact mark
             CreateImpactMark(hit);
 
-            // Deal damage if target has health
+            // Try to get Health component (local player)
             var health = hit.collider.GetComponent<Health>();
             if (health != null)
             {
@@ -103,6 +103,19 @@ public class Gun : MonoBehaviour
                 // Flash crosshair on hit
                 if (crosshair != null)
                     crosshair.OnHit();
+            }
+            else
+            {
+                // Try to get RemotePlayerHealth component (remote player)
+                var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
+                if (remoteHealth != null)
+                {
+                    remoteHealth.TakeDamage(damage);
+
+                    // Flash crosshair on hit
+                    if (crosshair != null)
+                        crosshair.OnHit();
+                }
             }
         }
         else

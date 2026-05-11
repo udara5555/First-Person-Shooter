@@ -64,6 +64,30 @@ export class MyRoom extends Room {
                 }, 500);
             }
         });
+
+        // NEW: Handle playerKilled message from clients
+        this.onMessage("playerKilled", (client: Client, data: any) => {
+            const playerId = data.playerId;
+            const player = this.s.players.get(playerId);
+            
+            if (!player) return;
+            
+            console.log("PLAYER KILLED:", playerId);
+            
+            // Set health to 0 on server
+            player.health = 0;
+            
+            // Broadcast death to all clients
+            this.broadcast("playerDied", {
+                playerId: playerId
+            });
+
+            // Remove player from room after a short delay
+            setTimeout(() => {
+                this.s.players.delete(playerId);
+                console.log("PLAYER REMOVED FROM ROOM:", playerId);
+            }, 500);
+        });
     }
 
     onJoin(client: Client) {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Health : MonoBehaviour
+public class RemotePlayerHealth : MonoBehaviour
 {
     [Header("Health")]
     public float maxHealth = 100f;
@@ -11,12 +11,14 @@ public class Health : MonoBehaviour
     public AudioClip deathSound;
 
     private AudioSource audioSource;
+    private RemotePlayerComponent remotePlayerComponent;
     private bool isDead = false;
 
     void Start()
     {
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
+        remotePlayerComponent = GetComponent<RemotePlayerComponent>();
     }
 
     public void TakeDamage(float damage)
@@ -37,7 +39,7 @@ public class Health : MonoBehaviour
         if (isDead) return; // Prevent multiple death calls
         isDead = true;
 
-        Debug.Log($"{gameObject.name} died!");
+        Debug.Log($"Remote player {gameObject.name} died!");
 
         // Play death sound
         if (deathSound != null && audioSource != null)
@@ -47,24 +49,18 @@ public class Health : MonoBehaviour
         if (deathEffect != null)
             Instantiate(deathEffect, transform.position, transform.rotation);
 
-        // Notify the server that local player died
+        // Notify the server that this remote player was killed
         if (ColyseusManager.Instance != null)
         {
             var room = ColyseusManager.Instance.GetRoom();
-            if (room != null)
+            if (room != null && remotePlayerComponent != null)
             {
-                room.Send("playerKilled", new { playerId = room.SessionId });
-                Debug.Log($"Sent playerKilled message for local player");
+                room.Send("playerKilled", new { playerId = remotePlayerComponent.SessionId });
+                Debug.Log($"Sent playerKilled message for {remotePlayerComponent.SessionId}");
             }
         }
 
-        // Return to lobby (the server will broadcast playerDied to all clients)
-        if (ColyseusManager.Instance != null)
-        {
-            ColyseusManager.Instance.OnLocalPlayerDied();
-        }
-
-        // Destroy the gameobject
+        // Just destroy this remote player from the scene (don't return to lobby)
         Destroy(gameObject);
     }
 

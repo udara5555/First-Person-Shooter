@@ -1385,8 +1385,8 @@ GameObject:
   - component: {fileID: 8566748560160941421}
   - component: {fileID: 3525323178109719380}
   - component: {fileID: 5368673181211172832}
-  - component: {fileID: 2803119020305191620}
   - component: {fileID: -8100929599627110592}
+  - component: {fileID: -3263284183491668396}
   m_Layer: 0
   m_Name: RemotePlayer
   m_TagString: Untagged
@@ -1457,6 +1457,11 @@ MonoBehaviour:
   maxLookAngle: 80
   animator: {fileID: 0}
   gun: {fileID: 2698259935203145164}
+  adsZoom: 40
+  normalZoom: 60
+  adsSpeed: 10
+  adsPosition: {x: 0.3, y: -0.2, z: 0.5}
+  normalPosition: {x: 0, y: 0, z: 0}
 --- !u!95 &5368673181211172832
 Animator:
   serializedVersion: 7
@@ -1479,21 +1484,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2803119020305191620
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7845827162537972005}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eee37a48a7a83044868f292b901ed62, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Health
-  maxHealth: 100
-  deathEffect: {fileID: 0}
-  deathSound: {fileID: 0}
 --- !u!136 &-8100929599627110592
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1517,6 +1507,21 @@ CapsuleCollider:
   m_Height: 3.3
   m_Direction: 1
   m_Center: {x: 0, y: 1.63, z: 0.47}
+--- !u!114 &-3263284183491668396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7845827162537972005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36ea0f32789e8524789e4ee5c5856fa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RemotePlayerHealth
+  maxHealth: 100
+  deathEffect: {fileID: 0}
+  deathSound: {fileID: 0}
 --- !u!1 &8391636646122489694
 GameObject:
   m_ObjectHideFlags: 0
