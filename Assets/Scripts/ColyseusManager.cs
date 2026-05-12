@@ -32,6 +32,7 @@ public class ColyseusManager : MonoBehaviour
         public bool lastIsWalking = false;
         public string sessionId;
         public float lastHealth;
+        public string currentSkin;
     }
     readonly Dictionary<string, RemoteData> remotes = new();
 
@@ -111,7 +112,8 @@ public class ColyseusManager : MonoBehaviour
                 animator = animator,
                 lastIsWalking = player.isWalking,
                 sessionId = sessionId,
-                lastHealth = player.health
+                lastHealth = player.health,
+                currentSkin = player.skin
             };
 
             if (animator != null)
@@ -119,6 +121,10 @@ public class ColyseusManager : MonoBehaviour
                 animator.SetBool("isWalking", player.isWalking);
                 Debug.Log($"Remote player {sessionId} spawned with isWalking: {player.isWalking}");
             }
+
+            // UPDATED: Apply skin to remote player with direct material assignment
+            ApplySkinToRemotePlayer(go, player.skin);
+            Debug.Log($"Remote player {sessionId} spawned with skin: {player.skin}");
 
             cb.OnChange(player, () =>
             {
@@ -132,6 +138,14 @@ public class ColyseusManager : MonoBehaviour
                     rd.animator.SetBool("isWalking", player.isWalking);
                     rd.lastIsWalking = player.isWalking;
                     Debug.Log($"Remote player {sessionId} isWalking changed to: {player.isWalking}");
+                }
+
+                // UPDATED: Handle skin changes with direct material assignment
+                if (rd.currentSkin != player.skin)
+                {
+                    ApplySkinToRemotePlayer(rd.go, player.skin);
+                    rd.currentSkin = player.skin;
+                    Debug.Log($"Remote player {sessionId} skin changed to: {player.skin}");
                 }
 
                 if (rd.lastHealth != player.health)
@@ -153,18 +167,15 @@ public class ColyseusManager : MonoBehaviour
             remotes.Remove(sessionId);
         });
 
-        // Listen for player death broadcast
         room.OnMessage<PlayerDeathMessage>("playerDied", (message) =>
         {
             Debug.Log($"Player died: {message.playerId}");
 
-            // If local player died, return to lobby
             if (message.playerId == room.SessionId)
             {
                 Debug.Log("Local player died! Returning to lobby...");
                 ReturnToLobby();
             }
-            // Otherwise remove remote player from scene
             else if (remotes.TryGetValue(message.playerId, out var rd))
             {
                 if (rd.go != null)
@@ -177,6 +188,63 @@ public class ColyseusManager : MonoBehaviour
         {
             Debug.Log($"Player damaged: ID={message.playerId}, Health={message.health}, Damage={message.damage}");
         });
+    }
+
+    // NEW METHOD: Apply skin directly by finding renderers
+    private void ApplySkinToRemotePlayer(GameObject playerGo, string skinName)
+    {
+        Material skinMaterial = GetMaterialBySkinName(skinName);
+
+        // Find all renderers in the player and its children
+        Renderer[] renderers = playerGo.GetComponentsInChildren<Renderer>();
+
+        foreach (var renderer in renderers)
+        {
+            // Skip the health bar canvas
+            if (renderer.gameObject.name.Contains("HealthBar")) continue;
+
+            // Apply skin material to all materials in the renderer
+            Material[] materials = renderer.materials;
+            for (int i = 0; i < materials.Length; i++)
+            {
+                materials[i] = skinMaterial;
+            }
+            renderer.materials = materials;
+        }
+
+        Debug.Log($"Applied skin '{skinName}' to remote player {playerGo.name}");
+    }
+
+    // NEW METHOD: Get material by skin name
+    private Material GetMaterialBySkinName(string skinName)
+    {
+        // Reference materials from the local player
+        var localSkinApplier = localPlayer?.GetComponent<PlayerSkinApplier>();
+
+        if (localSkinApplier != null)
+        {
+            return skinName switch
+            {
+                "Skin1" => localSkinApplier.GetSkin1Material(),
+                "Skin2" => localSkinApplier.GetSkin2Material(),
+                _ => localSkinApplier.GetSkin1Material()
+            };
+        }
+
+        // Fallback: try to find materials from the prefab
+        var prefabSkinApplier = remotePlayerPrefab.GetComponent<PlayerSkinApplier>();
+        if (prefabSkinApplier != null)
+        {
+            return skinName switch
+            {
+                "Skin1" => prefabSkinApplier.GetSkin1Material(),
+                "Skin2" => prefabSkinApplier.GetSkin2Material(),
+                _ => prefabSkinApplier.GetSkin1Material()
+            };
+        }
+
+        Debug.LogError("Could not find skin materials!");
+        return null;
     }
 
     void ReturnToLobby()

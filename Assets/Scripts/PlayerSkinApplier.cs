@@ -24,16 +24,44 @@ public class PlayerSkinApplier : MonoBehaviour
             _ => skin1Material
         };
 
+        ApplyMaterial(selectedMaterial);
+        Debug.Log("Applied skin: " + SkinData.GetSkinName(SkinData.SelectedSkin));
+    }
+
+    public void ApplySkinByName(string skinName)
+    {
+        Material selectedMaterial = skinName switch
+        {
+            "Skin1" => skin1Material,
+            "Skin2" => skin2Material,
+            _ => skin1Material
+        };
+
+        ApplyMaterial(selectedMaterial);
+        Debug.Log("Applied skin: " + skinName);
+    }
+
+    private void ApplyMaterial(Material material)
+    {
         if (armsRenderer != null)
         {
-            armsRenderer.material = selectedMaterial;
+            armsRenderer.material = material;
         }
 
         if (bodyRenderer != null)
         {
-            bodyRenderer.material = selectedMaterial;
+            bodyRenderer.material = material;
         }
+    }
 
-        Debug.Log("Applied skin: " + SkinData.GetSkinName(SkinData.SelectedSkin));
+    // PUBLIC GETTER METHODS for ColyseusManager
+    public Material GetSkin1Material()
+    {
+        return skin1Material;
+    }
+
+    public Material GetSkin2Material()
+    {
+        return skin2Material;
     }
 }

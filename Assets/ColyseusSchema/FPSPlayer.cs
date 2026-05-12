@@ -35,5 +35,8 @@ public FPSPlayer() { }
 
 	[Type(6, "float32")]
 	public float maxHealth = default(float);
+
+	[Type(7, "string")]
+	public string skin = default(string);
 }
 

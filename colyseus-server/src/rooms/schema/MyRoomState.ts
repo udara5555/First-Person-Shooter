@@ -8,6 +8,7 @@ export class FPSPlayer extends Schema {
     @type("boolean") isWalking = false;
     @type("float32") health: number = 100;
     @type("float32") maxHealth: number = 100;
+    @type("string") skin: string = "default";
 }
 
 export class MyRoomState extends Schema {

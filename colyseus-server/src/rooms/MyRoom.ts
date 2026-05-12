@@ -6,11 +6,14 @@ export class MyRoom extends Room {
         return this.state as MyRoomState;
     }
 
+    // Store player skins when they join room (before game starts)
+    private playerSkins: Map<string, string> = new Map();
+
     onCreate(options: any) {
         this.setState(new MyRoomState());
         console.log("ROOM CREATED:", this.roomId);
 
-        this.onMessage("joinGame", (client: Client) => {
+        this.onMessage("joinGame", (client: Client, data: any) => {
             if (this.s.players.has(client.sessionId)) {
                 console.log("PLAYER ALREADY JOINED:", client.sessionId);
                 return;
@@ -21,7 +24,10 @@ export class MyRoom extends Room {
             player.x = 0;
             player.y = 0;
             player.z = 0;
+            // Use the skin stored when player joined the room
+            player.skin = this.playerSkins.get(client.sessionId) || "Skin1";
             this.s.players.set(client.sessionId, player);
+            console.log("PLAYER SKIN SET TO:", player.skin);
         });
 
         this.onMessage("move", (client: Client, data: any) => {
@@ -32,6 +38,13 @@ export class MyRoom extends Room {
             player.z = data.z ?? player.z;
             player.rotY = data.rotY ?? player.rotY;
             player.isWalking = data.isWalking ?? player.isWalking;
+        });
+
+        this.onMessage("changeSkin", (client: Client, data: any) => {
+            const player = this.s.players.get(client.sessionId);
+            if (!player) return;
+            player.skin = data.skin || "Skin1";
+            console.log("PLAYER SKIN CHANGED:", client.sessionId, "to", player.skin);
         });
 
         this.onMessage("damage", (client: Client, data: any) => {
@@ -60,12 +73,13 @@ export class MyRoom extends Room {
                 // Remove player from room after a short delay
                 setTimeout(() => {
                     this.s.players.delete(data.targetPlayerId);
+                    this.playerSkins.delete(data.targetPlayerId);
                     console.log("PLAYER REMOVED FROM ROOM:", data.targetPlayerId);
                 }, 500);
             }
         });
 
-        // NEW: Handle playerKilled message from clients
+        // Handle playerKilled message from clients
         this.onMessage("playerKilled", (client: Client, data: any) => {
             const playerId = data.playerId;
             const player = this.s.players.get(playerId);
@@ -85,17 +99,23 @@ export class MyRoom extends Room {
             // Remove player from room after a short delay
             setTimeout(() => {
                 this.s.players.delete(playerId);
+                this.playerSkins.delete(playerId);
                 console.log("PLAYER REMOVED FROM ROOM:", playerId);
             }, 500);
         });
     }
 
-    onJoin(client: Client) {
-        console.log("CONNECTED TO ROOM:", client.sessionId);
+    onJoin(client: Client, options: any) {
+        console.log("PLAYER JOINED ROOM:", client.sessionId);
+        // Store the skin when player joins the room
+        const skin = options?.skin || "Skin1";
+        this.playerSkins.set(client.sessionId, skin);
+        console.log("STORED SKIN FOR", client.sessionId, ":", skin);
     }
 
     onLeave(client: Client) {
         console.log("LEAVE:", client.sessionId);
         this.s.players.delete(client.sessionId);
+        this.playerSkins.delete(client.sessionId);
     }
 }
