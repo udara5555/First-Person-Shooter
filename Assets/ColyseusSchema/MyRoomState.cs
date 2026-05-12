@@ -17,5 +17,14 @@ public partial class MyRoomState : Schema {
 public MyRoomState() { }
 	[Type(0, "map", typeof(MapSchema<FPSPlayer>))]
 	public MapSchema<FPSPlayer> players = null;
+
+	[Type(1, "number")]
+	public float gameStartTime = default(float);
+
+	[Type(2, "boolean")]
+	public bool isGameActive = default(bool);
+
+	[Type(3, "float32")]
+	public float timeRemaining = default(float);
 }
 

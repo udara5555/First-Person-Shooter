@@ -86,14 +86,24 @@ public class ColyseusManager : MonoBehaviour
     {
         var cb = Callbacks.Get(room);
 
+        // NEW: Listen for timeRemaining changes from server
+        /*cb.OnChange(room.State, () =>
+        {
+            Debug.Log($"Game state changed - TimeRemaining: {room.State.timeRemaining}, IsGameActive: {room.State.isGameActive}");
+        });*/
+
         cb.OnAdd(state => state.players, (sessionId, player) =>
         {
             if (sessionId == room.SessionId) return;
+
+            Debug.Log($"Spawning remote player {sessionId} at position ({player.x}, {player.y}, {player.z})");
 
             var go = Instantiate(remotePlayerPrefab);
             go.transform.position = new Vector3(player.x, player.y, player.z);
             go.tag = "RemotePlayer";
             go.name = $"RemotePlayer_{sessionId}";
+
+            Debug.Log($"Remote player {sessionId} instantiated at {go.transform.position}");
 
             var animator = go.GetComponent<Animator>();
             if (animator == null)
@@ -122,9 +132,11 @@ public class ColyseusManager : MonoBehaviour
                 Debug.Log($"Remote player {sessionId} spawned with isWalking: {player.isWalking}");
             }
 
-            // UPDATED: Apply skin to remote player with direct material assignment
+            // Apply skin to remote player
             ApplySkinToRemotePlayer(go, player.skin);
             Debug.Log($"Remote player {sessionId} spawned with skin: {player.skin}");
+
+            
 
             cb.OnChange(player, () =>
             {

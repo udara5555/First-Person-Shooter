@@ -85,7 +85,8 @@ public class LobbyManager : MonoBehaviour
     {
         if (room == null) return;
 
-        room.Send("joinGame");
+        // Send startGame message to server (instead of joinGame)
+        room.Send("startGame");
 
         // Pass the room to ColyseusManager before loading scene
         ColyseusManager.SetRoom(room, client);

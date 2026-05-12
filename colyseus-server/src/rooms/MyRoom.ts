@@ -8,10 +8,26 @@ export class MyRoom extends Room {
 
     // Store player skins when they join room (before game starts)
     private playerSkins: Map<string, string> = new Map();
+    private gameTimerInterval: NodeJS.Timeout | null = null;
+    private gameStartTime: number = 0;
+    private gameDuration: number = 300; // 5 minutes in seconds
 
     onCreate(options: any) {
         this.setState(new MyRoomState());
         console.log("ROOM CREATED:", this.roomId);
+
+        // Start timer immediately when room is created
+        this.gameStartTime = Date.now();
+        this.s.gameStartTime = this.gameStartTime;
+        this.StartGameTimer();
+        console.log("GAME TIMER STARTED AT:", this.gameStartTime);
+
+        this.onMessage("startGame", (client: Client, data: any) => {
+            if (!this.s.isGameActive) {
+                this.s.isGameActive = true;
+                console.log("GAME STARTED (gameplay begins):", client.sessionId);
+            }
+        });
 
         this.onMessage("joinGame", (client: Client, data: any) => {
             if (this.s.players.has(client.sessionId)) {
@@ -24,7 +40,6 @@ export class MyRoom extends Room {
             player.x = 0;
             player.y = 0;
             player.z = 0;
-            // Use the skin stored when player joined the room
             player.skin = this.playerSkins.get(client.sessionId) || "Skin1";
             this.s.players.set(client.sessionId, player);
             console.log("PLAYER SKIN SET TO:", player.skin);
@@ -54,23 +69,19 @@ export class MyRoom extends Room {
             const damageAmount = Math.max(0, data.damage);
             targetPlayer.health = Math.max(0, targetPlayer.health - damageAmount);
             
-            // Broadcast damage event
             this.broadcast("playerDamaged", {
                 playerId: data.targetPlayerId,
                 health: targetPlayer.health,
                 damage: damageAmount
             });
 
-            // Check if player died
             if (targetPlayer.health <= 0) {
                 console.log("PLAYER DIED:", data.targetPlayerId);
                 
-                // Broadcast player death to all clients
                 this.broadcast("playerDied", {
                     playerId: data.targetPlayerId
                 });
 
-                // Remove player from room after a short delay
                 setTimeout(() => {
                     this.s.players.delete(data.targetPlayerId);
                     this.playerSkins.delete(data.targetPlayerId);
@@ -79,7 +90,6 @@ export class MyRoom extends Room {
             }
         });
 
-        // Handle playerKilled message from clients
         this.onMessage("playerKilled", (client: Client, data: any) => {
             const playerId = data.playerId;
             const player = this.s.players.get(playerId);
@@ -87,16 +97,12 @@ export class MyRoom extends Room {
             if (!player) return;
             
             console.log("PLAYER KILLED:", playerId);
-            
-            // Set health to 0 on server
             player.health = 0;
             
-            // Broadcast death to all clients
             this.broadcast("playerDied", {
                 playerId: playerId
             });
 
-            // Remove player from room after a short delay
             setTimeout(() => {
                 this.s.players.delete(playerId);
                 this.playerSkins.delete(playerId);
@@ -107,15 +113,62 @@ export class MyRoom extends Room {
 
     onJoin(client: Client, options: any) {
         console.log("PLAYER JOINED ROOM:", client.sessionId);
-        // Store the skin when player joins the room
-        const skin = options?.skin || "Skin1";
-        this.playerSkins.set(client.sessionId, skin);
-        console.log("STORED SKIN FOR", client.sessionId, ":", skin);
+        
+        // Store the skin from join options
+        if (options.skin) {
+            this.playerSkins.set(client.sessionId, options.skin);
+        }
+
+        // Add player to game state automatically
+        const player = new FPSPlayer();
+        player.x = 0;
+        player.y = 0;
+        player.z = 0;
+        player.skin = this.playerSkins.get(client.sessionId) || "default";
+        this.s.players.set(client.sessionId, player);
+        console.log("PLAYER ADDED TO STATE:", client.sessionId, "with skin:", player.skin);
+
+        // Send current game state to newly joined player
+        client.send("gameState", {
+            gameStartTime: this.s.gameStartTime,
+            isGameActive: this.s.isGameActive,
+            gameDuration: this.gameDuration
+        });
     }
 
-    onLeave(client: Client) {
-        console.log("LEAVE:", client.sessionId);
+    onLeave(client: Client, code?: number) {
+        console.log("PLAYER LEFT ROOM:", client.sessionId);
         this.s.players.delete(client.sessionId);
         this.playerSkins.delete(client.sessionId);
+    }
+
+    onDispose() {
+        if (this.gameTimerInterval) {
+            clearInterval(this.gameTimerInterval);
+        }
+    }
+
+    private StartGameTimer() {
+        this.gameTimerInterval = setInterval(() => {
+            const elapsedSeconds = (Date.now() - this.gameStartTime) / 1000;
+            const timeRemaining = Math.max(0, this.gameDuration - elapsedSeconds);
+
+            this.s.timeRemaining = timeRemaining;
+
+            if (timeRemaining <= 0) {
+                this.EndGame();
+            }
+        }, 100); // Update every 100ms for smooth updates
+    }
+
+    private EndGame() {
+        if (this.gameTimerInterval) {
+            clearInterval(this.gameTimerInterval);
+            this.gameTimerInterval = null;
+        }
+
+        this.s.isGameActive = false;
+        this.broadcast("gameEnded", { reason: "timeUp" });
+        console.log("GAME TIME OVER!");
     }
 }

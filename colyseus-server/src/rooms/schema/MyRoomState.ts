@@ -13,4 +13,7 @@ export class FPSPlayer extends Schema {
 
 export class MyRoomState extends Schema {
     @type({ map: FPSPlayer }) players = new MapSchema<FPSPlayer>();
+    @type("number") gameStartTime: number = 0;
+    @type("boolean") isGameActive: boolean = false;
+    @type("float32") timeRemaining: number = 300;
 }
