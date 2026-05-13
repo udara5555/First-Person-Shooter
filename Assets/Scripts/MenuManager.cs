@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -10,6 +11,8 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private Button leaveButton;
 
     private bool isMenuActive = true;
+    private ColyseusManager colyseusManager;
+    private FPSController fpsController;
 
     void Start()
     {
@@ -26,6 +29,22 @@ public class MenuManager : MonoBehaviour
             return;
         }
 
+        // Get ColyseusManager instance
+        colyseusManager = ColyseusManager.Instance;
+
+        // Get FPSController from the local player (stored in ColyseusManager)
+        if (colyseusManager != null && colyseusManager.localPlayer != null)
+        {
+            fpsController = colyseusManager.localPlayer.GetComponent<FPSController>();
+
+            if (fpsController == null)
+                Debug.LogError("FPSController not found on local player!");
+        }
+        else
+        {
+            Debug.LogError("ColyseusManager or localPlayer not found!");
+        }
+
         // Setup leave button listener
         leaveButton.onClick.AddListener(LeaveGame);
 
@@ -35,21 +54,14 @@ public class MenuManager : MonoBehaviour
 
     void Update()
     {
-        // Toggle menu with Esc key
-        if (Input.GetKeyDown(KeyCode.Escape))
+        // ESC key - only open menu if not already open
+        if (Input.GetKeyDown(KeyCode.Escape) && !isMenuActive)
         {
-            if (isMenuActive)
-            {
-                HideMenu();
-            }
-            else
-            {
-                ShowMenu();
-            }
+            ShowMenu();
         }
 
-        // Hide menu on any mouse click (except on UI elements like Leave button)
-        if (Input.GetMouseButtonDown(0) && isMenuActive && !IsPointerOverUIElement())
+        // Left mouse click - only close menu if open (except on Leave button)
+        if (Input.GetMouseButtonDown(0) && isMenuActive && !IsPointerOverLeaveButton())
         {
             HideMenu();
         }
@@ -61,7 +73,13 @@ public class MenuManager : MonoBehaviour
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
         isMenuActive = true;
-        Time.timeScale = 1f; // Ensure game continues (not paused)
+        Time.timeScale = 1f;
+
+        // Disable player movement
+        if (fpsController != null)
+            fpsController.enabled = false;
+        else
+            Debug.LogWarning("FPSController is null, cannot disable movement!");
     }
 
     private void HideMenu()
@@ -70,22 +88,56 @@ public class MenuManager : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         isMenuActive = false;
+
+        // Enable player movement
+        if (fpsController != null)
+            fpsController.enabled = true;
+        else
+            Debug.LogWarning("FPSController is null, cannot enable movement!");
     }
 
-    private void LeaveGame()
+    private async void LeaveGame()
     {
         // Reset time scale before leaving
         Time.timeScale = 1f;
+
+        // Leave the Colyseus room
+        if (colyseusManager != null)
+        {
+            var room = colyseusManager.GetRoom();
+            if (room != null && room.State != null)
+            {
+                await room.Leave();
+                Debug.Log("Left the game room");
+            }
+
+            // Destroy the old ColyseusManager instance so a new one can be created
+            Destroy(colyseusManager.gameObject);
+            Debug.Log("Destroyed ColyseusManager for new room connection");
+        }
 
         // Navigate back to lobby
         SceneManager.LoadScene("Lobby");
     }
 
     /// <summary>
-    /// Checks if pointer is over a UI element
+    /// Checks if pointer is over the Leave button specifically
     /// </summary>
-    private bool IsPointerOverUIElement()
+    private bool IsPointerOverLeaveButton()
     {
-        return EventSystem.current.IsPointerOverGameObject();
+        PointerEventData pointerData = new PointerEventData(EventSystem.current);
+        pointerData.position = Input.mousePosition;
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject == leaveButton.gameObject)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
