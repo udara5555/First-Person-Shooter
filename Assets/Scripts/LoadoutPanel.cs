@@ -98,8 +98,10 @@ public class LoadoutPanel : MonoBehaviour
 
     private void OnDeploy()
     {
-        List<string> selectedWeapons = LoadoutData.GetSelectedWeapons();
-        Debug.Log($"Deployed with {selectedWeapons.Count} weapons: {string.Join(", ", selectedWeapons)}");
+        // Save selected weapons to LobbyData before closing
+        LobbyData.SelectedWeapons = new List<string>(LoadoutData.GetSelectedWeapons());
+
+        Debug.Log($"Deployed with {LobbyData.SelectedWeapons.Count} weapons: {string.Join(", ", LobbyData.SelectedWeapons)}");
         CloseLoadoutPanel();
     }
 }
