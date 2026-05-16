@@ -18,11 +18,11 @@ public class FPSController : MonoBehaviour
     public Gun gun;
 
     [Header("ADS (Aim Down Sight)")]
-    public float adsZoom = 40f; // Zoomed FOV
-    public float normalZoom = 60f; // Normal FOV
-    public float adsSpeed = 10f; // How fast to zoom
-    public Vector3 adsPosition = new Vector3(0.3f, -0.2f, 0.5f); // Gun position when ADS
-    public Vector3 normalPosition = Vector3.zero; // Gun position when not ADS
+    public float adsZoom = 40f;
+    public float normalZoom = 60f;
+    public float adsSpeed = 10f;
+    public Vector3 adsPosition = new Vector3(0.3f, -0.2f, 0.5f);
+    public Vector3 normalPosition = Vector3.zero;
 
     private CharacterController cc;
     private Camera cam;
@@ -32,11 +32,13 @@ public class FPSController : MonoBehaviour
     private bool isAiming = false;
     private float targetFOV;
     private float currentFOV;
+    private WeaponManager weaponManager;
 
     void Start()
     {
         cc = GetComponent<CharacterController>();
         cam = GetComponentInChildren<Camera>();
+        weaponManager = GetComponent<WeaponManager>();
 
         if (animator == null)
             animator = GetComponent<Animator>();
@@ -48,104 +50,89 @@ public class FPSController : MonoBehaviour
         Cursor.visible = false;
 
         // Set initial FOV
-        currentFOV = normalZoom;
-        targetFOV = normalZoom;
         if (cam != null)
+        {
+            targetFOV = normalZoom;
+            currentFOV = targetFOV;
             cam.fieldOfView = currentFOV;
+        }
     }
 
     void Update()
     {
-        MouseLook();
-        Move();
+        HandleMovement();
+        HandleMouseLook();
         HandleADS();
+        HandleShooting();
     }
 
-    void MouseLook()
+    private void HandleMovement()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
-        transform.Rotate(0, mouseX, 0);
+        // Get input
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
-        verticalRotation -= mouseY;
-        verticalRotation = Mathf.Clamp(verticalRotation, -maxLookAngle, maxLookAngle);
-        cam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
-    }
+        // Apply gravity
+        velocity.y += gravity * Time.deltaTime;
 
-    void Move()
-    {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-
-        Vector3 move = transform.right * h + transform.forward * v;
-        move = move.normalized * moveSpeed;
-
-        // Check if player is moving (horizontal or vertical input)
-        isMoving = (h != 0 || v != 0) && cc.isGrounded;
-
-        if (cc.isGrounded) velocity.y = -2f;
-        else velocity.y += gravity * Time.deltaTime;
-
+        // Handle jumping
         if (Input.GetKeyDown(KeyCode.Space) && cc.isGrounded)
+        {
             velocity.y = jumpForce;
+        }
 
-        cc.Move((move + velocity) * Time.deltaTime);
+        // Move character
+        Vector3 move = transform.forward * z + transform.right * x;
+        cc.Move((move * moveSpeed + velocity) * Time.deltaTime);
 
-        // Trigger animation
-        UpdateAnimation();
-    }
-
-    void UpdateAnimation()
-    {
+        // Update animation
+        isMoving = x != 0 || z != 0;
         if (animator != null)
         {
+            // Use the correct parameter name from your Animator
             animator.SetBool("isWalking", isMoving);
         }
     }
 
-    void HandleADS()
+    private void HandleMouseLook()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        transform.Rotate(Vector3.up * mouseX);
+
+        verticalRotation -= mouseY;
+        verticalRotation = Mathf.Clamp(verticalRotation, -maxLookAngle, maxLookAngle);
+
+        if (cam != null)
+            cam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+    }
+
+    private void HandleADS()
     {
         isAiming = Input.GetMouseButton(1); // Right mouse button
 
-        if (isAiming)
-        {
-            targetFOV = adsZoom;
-        }
-        else
-        {
-            targetFOV = normalZoom;
-        }
-
-        // Smoothly transition FOV
-        currentFOV = Mathf.Lerp(currentFOV, targetFOV, Time.deltaTime * adsSpeed);
         if (cam != null)
+        {
+            targetFOV = isAiming ? adsZoom : normalZoom;
+            currentFOV = Mathf.Lerp(currentFOV, targetFOV, adsSpeed * Time.deltaTime);
             cam.fieldOfView = currentFOV;
-
-        // Smoothly move gun position
-        if (gun != null)
-        {
-            Vector3 targetPosition = isAiming ? adsPosition : normalPosition;
-            gun.transform.localPosition = Vector3.Lerp(gun.transform.localPosition, targetPosition, Time.deltaTime * adsSpeed);
-        }
-
-        // Update crosshair visibility
-        var crosshair = gun?.GetComponent<Crosshair>();
-        if (crosshair == null)
-            crosshair = Object.FindAnyObjectByType<Crosshair>();
-
-        if (crosshair != null)
-        {
-            crosshair.SetAiming(isAiming);
         }
     }
 
+    private void HandleShooting()
+    {
+        if (gun != null && Input.GetMouseButton(0))
+        {
+            gun.Shoot();
+        }
+    }
+
+    /// <summary>
+    /// Returns true if the player is currently moving
+    /// </summary>
     public bool GetIsMoving()
     {
         return isMoving;
-    }
-
-    public bool IsAiming()
-    {
-        return isAiming;
     }
 }

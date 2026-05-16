@@ -39,8 +39,27 @@ public class Gun : MonoBehaviour
         if (crosshair == null)
             crosshair = Object.FindAnyObjectByType<Crosshair>();
 
+        // Get camera - try multiple methods
         if (mainCamera == null)
+        {
+            // First try: Find parent camera (since gun is child of camera)
+            mainCamera = GetComponentInParent<Camera>();
+        }
+
+        if (mainCamera == null)
+        {
+            // Second try: Find camera by tag
             mainCamera = Camera.main;
+        }
+
+        if (mainCamera == null)
+        {
+            // Third try: Search in scene
+            mainCamera = FindObjectOfType<Camera>();
+        }
+
+        if (mainCamera == null)
+            Debug.LogError("Could not find main camera! Gun will not shoot properly.");
 
         if (bulletImpactPrefab == null)
             Debug.LogWarning("bulletImpactPrefab is not assigned in Gun script!");
@@ -57,8 +76,30 @@ public class Gun : MonoBehaviour
         }
     }
 
-    void Shoot()
+    public void Shoot()
     {
+        // Verify camera is assigned
+        if (mainCamera == null)
+        {
+            mainCamera = GetComponentInParent<Camera>();
+            if (mainCamera == null)
+            {
+                mainCamera = Camera.main;
+            }
+            if (mainCamera == null)
+            {
+                Debug.LogError("Cannot shoot - main camera not found!");
+                return;
+            }
+        }
+
+        // Verify shoot point exists
+        if (shootPoint == null)
+        {
+            Debug.LogError("Shoot point not assigned on " + gameObject.name);
+            return;
+        }
+
         // Play shoot animation
         if (animator != null)
         {
@@ -99,55 +140,15 @@ public class Gun : MonoBehaviour
             if (health != null)
             {
                 health.TakeDamage(damage);
-
-                // Flash crosshair on hit
-                if (crosshair != null)
-                    crosshair.OnHit();
             }
-            else
-            {
-                // Try to get RemotePlayerHealth component (remote player)
-                var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
-                if (remoteHealth != null)
-                {
-                    remoteHealth.TakeDamage(damage);
-
-                    // Flash crosshair on hit
-                    if (crosshair != null)
-                        crosshair.OnHit();
-                }
-            }
-        }
-        else
-        {
-            Debug.Log("Raycast missed!");
         }
     }
 
-    void CreateImpactMark(RaycastHit hit)
+    private void CreateImpactMark(RaycastHit hit)
     {
         if (bulletImpactPrefab == null)
-        {
-            Debug.LogError("bulletImpactPrefab is NULL! Cannot create impact mark.");
             return;
-        }
 
-        // Position the impact at the hit point (slightly offset from surface)
-        Vector3 impactPosition = hit.point + hit.normal * 0.01f;
-
-        // Rotate to face the surface (plane faces outward)
-        Quaternion impactRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
-
-        // Create the impact mark in world space
-        var impact = Instantiate(bulletImpactPrefab, impactPosition, impactRotation);
-
-        // Set scale - the prefab is 0.01, so we scale from that base
-        impact.transform.localScale = Vector3.one * impactMarkScale;
-
-        Debug.Log($"Impact created at {impactPosition} on {hit.collider.gameObject.name}");
-
-        // Add BulletImpact component if it doesn't exist
-        if (impact.GetComponent<BulletImpact>() == null)
-            impact.AddComponent<BulletImpact>();
+        Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(hit.normal));
     }
 }
