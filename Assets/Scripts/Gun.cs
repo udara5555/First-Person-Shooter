@@ -55,7 +55,7 @@ public class Gun : MonoBehaviour
         if (mainCamera == null)
         {
             // Third try: Search in scene
-            mainCamera = FindObjectOfType<Camera>();
+            //mainCamera = FindObjectOfType<Camera>();
         }
 
         if (mainCamera == null)
@@ -67,17 +67,18 @@ public class Gun : MonoBehaviour
 
     void Update()
     {
+        // Decrement cooldown (important for fire rate)
         shootCooldown -= Time.deltaTime;
-
-        if (Input.GetMouseButton(0) && shootCooldown <= 0)
-        {
-            Shoot();
-            shootCooldown = fireRate;
-        }
     }
 
     public void Shoot()
     {
+        // Check cooldown
+        if (shootCooldown > 0)
+            return;
+
+        shootCooldown = fireRate;
+
         // Verify camera is assigned
         if (mainCamera == null)
         {
@@ -144,11 +145,23 @@ public class Gun : MonoBehaviour
         }
     }
 
-    private void CreateImpactMark(RaycastHit hit)
+    void CreateImpactMark(RaycastHit hit)
     {
         if (bulletImpactPrefab == null)
+        {
+            Debug.LogError("bulletImpactPrefab is NULL! Cannot create impact mark.");
             return;
+        }
 
-        Instantiate(bulletImpactPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+        Vector3 impactPosition = hit.point + hit.normal * 0.01f;
+        Quaternion impactRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+
+        var impact = Instantiate(bulletImpactPrefab, impactPosition, impactRotation);
+        impact.transform.localScale = Vector3.one * impactMarkScale;
+
+        Debug.Log($"Impact created at {impactPosition} on {hit.collider.gameObject.name}");
+
+        if (impact.GetComponent<BulletImpact>() == null)
+            impact.AddComponent<BulletImpact>();
     }
 }

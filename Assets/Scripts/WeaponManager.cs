@@ -1,13 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponManager : MonoBehaviour
 {
-    [SerializeField] private Transform gunContainer; // The Gun container with all weapons
-    [SerializeField] private List<GameObject> allWeaponModels; // Drag all gun models here
+    [SerializeField] private Transform gunContainer;
+    [SerializeField] private List<GameObject> allWeaponModels;
 
     private List<string> selectedWeaponIds = new List<string>();
-    private int currentWeaponIndex = 0;
+    private int currentWeaponIndex = -1;
     private Gun currentGunScript;
     private FPSController fpsController;
 
@@ -29,6 +29,12 @@ public class WeaponManager : MonoBehaviour
     {
         fpsController = GetComponent<FPSController>();
 
+        if (allWeaponModels == null || allWeaponModels.Count == 0)
+        {
+            Debug.LogError("WeaponManager: No weapon models assigned!");
+            return;
+        }
+
         // Deactivate all weapons on start
         foreach (GameObject model in allWeaponModels)
         {
@@ -37,7 +43,16 @@ public class WeaponManager : MonoBehaviour
         }
 
         InitializeWeapons();
-        EquipWeapon(0);
+
+        // Equip first weapon immediately
+        if (selectedWeaponIds.Count > 0)
+        {
+            EquipWeapon(0);
+        }
+        else
+        {
+            Debug.LogError("WeaponManager: No weapons selected!");
+        }
     }
 
     private void Update()
@@ -48,15 +63,13 @@ public class WeaponManager : MonoBehaviour
     private void InitializeWeapons()
     {
         // Get selected weapons from LobbyData
-        selectedWeaponIds = LobbyData.SelectedWeapons;
+        selectedWeaponIds = new List<string>(LobbyData.SelectedWeapons);
 
         if (selectedWeaponIds.Count == 0)
         {
             Debug.LogError("No weapons selected! Using default AK-47");
             selectedWeaponIds.Add("ak47");
         }
-
-        Debug.Log($"Initialized with {selectedWeaponIds.Count} weapons: {string.Join(", ", selectedWeaponIds)}");
     }
 
     private void HandleWeaponSwitching()
@@ -76,14 +89,20 @@ public class WeaponManager : MonoBehaviour
 
     private void EquipWeapon(int index)
     {
+        if (selectedWeaponIds.Count == 0)
+        {
+            Debug.LogError("EquipWeapon: No weapons selected!");
+            return;
+        }
+
         if (index >= selectedWeaponIds.Count)
         {
-            Debug.LogWarning($"Weapon index {index} out of range");
+            Debug.LogWarning($"EquipWeapon: Weapon index {index} out of range");
             return;
         }
 
         if (index == currentWeaponIndex)
-            return; // Already equipped
+            return;
 
         currentWeaponIndex = index;
         string weaponId = selectedWeaponIds[index];
@@ -103,7 +122,7 @@ public class WeaponManager : MonoBehaviour
     {
         if (!weaponIndexMap.ContainsKey(weaponId))
         {
-            Debug.LogError($"Weapon ID {weaponId} not found in map!");
+            Debug.LogError($"Weapon ID '{weaponId}' not found!");
             return;
         }
 
@@ -122,8 +141,8 @@ public class WeaponManager : MonoBehaviour
             return;
         }
 
+        // Activate the weapon
         weaponModel.SetActive(true);
-        Debug.Log($"Activated weapon: {weaponId} at index {gunIndex}");
 
         // Get Gun script from the weapon model
         currentGunScript = weaponModel.GetComponent<Gun>();
@@ -136,15 +155,10 @@ public class WeaponManager : MonoBehaviour
         if (fpsController != null && currentGunScript != null)
         {
             fpsController.gun = currentGunScript;
-            Debug.Log($"Equipped weapon: {weaponId}");
-        }
-        else
-        {
-            Debug.LogWarning($"Could not find Gun script on weapon model!");
         }
     }
 
     public int GetCurrentWeaponIndex() => currentWeaponIndex;
-    public string GetCurrentWeaponId() => selectedWeaponIds[currentWeaponIndex];
+    public string GetCurrentWeaponId() => selectedWeaponIds.Count > currentWeaponIndex && currentWeaponIndex >= 0 ? selectedWeaponIds[currentWeaponIndex] : "None";
     public Gun GetCurrentGun() => currentGunScript;
 }

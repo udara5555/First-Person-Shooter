@@ -131,7 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf821aeba660b544ba8e4033fd1a0c24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gun
-  fireRate: 0.5
+  fireRate: 0.4
   damage: 13
   bulletSpeed: 75
   shootRange: 200
@@ -139,7 +139,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -859,7 +859,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -883,7 +883,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -907,7 +907,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -923,7 +923,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf821aeba660b544ba8e4033fd1a0c24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gun
-  fireRate: 0.3
+  fireRate: 0.2
   damage: 5
   bulletSpeed: 50
   shootRange: 75
@@ -931,7 +931,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -947,7 +947,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf821aeba660b544ba8e4033fd1a0c24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gun
-  fireRate: 0.5
+  fireRate: 1
   damage: 15
   bulletSpeed: 50
   shootRange: 20
@@ -955,7 +955,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -2948,7 +2948,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -2972,7 +2972,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
@@ -3801,7 +3801,7 @@ MonoBehaviour:
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
-  impactMarkScale: 1
+  impactMarkScale: 0.05
   animator: {fileID: 0}
   crosshair: {fileID: 0}
   mainCamera: {fileID: 0}
