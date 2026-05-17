@@ -17,21 +17,11 @@ public class FPSController : MonoBehaviour
     [Header("Gun")]
     public Gun gun;
 
-    [Header("ADS (Aim Down Sight)")]
-    public float adsZoom = 40f;
-    public float normalZoom = 60f;
-    public float adsSpeed = 10f;
-    public Vector3 adsPosition = new Vector3(0.3f, -0.2f, 0.5f);
-    public Vector3 normalPosition = Vector3.zero;
-
     private CharacterController cc;
     private Camera cam;
     private float verticalRotation = 0f;
     private Vector3 velocity;
     private bool isMoving = false;
-    private bool isAiming = false;
-    private float targetFOV;
-    private float currentFOV;
     private WeaponManager weaponManager;
 
     void Start()
@@ -48,21 +38,12 @@ public class FPSController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        // Set initial FOV
-        if (cam != null)
-        {
-            targetFOV = normalZoom;
-            currentFOV = targetFOV;
-            cam.fieldOfView = currentFOV;
-        }
     }
 
     void Update()
     {
         HandleMovement();
         HandleMouseLook();
-        HandleADS();
         HandleShooting();
     }
 
@@ -89,7 +70,6 @@ public class FPSController : MonoBehaviour
         isMoving = x != 0 || z != 0;
         if (animator != null)
         {
-            // Use the correct parameter name from your Animator
             animator.SetBool("isWalking", isMoving);
         }
     }
@@ -106,18 +86,6 @@ public class FPSController : MonoBehaviour
 
         if (cam != null)
             cam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
-    }
-
-    private void HandleADS()
-    {
-        isAiming = Input.GetMouseButton(1); // Right mouse button
-
-        if (cam != null)
-        {
-            targetFOV = isAiming ? adsZoom : normalZoom;
-            currentFOV = Mathf.Lerp(currentFOV, targetFOV, adsSpeed * Time.deltaTime);
-            cam.fieldOfView = currentFOV;
-        }
     }
 
     private void HandleShooting()
