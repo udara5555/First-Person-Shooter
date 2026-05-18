@@ -150,11 +150,16 @@ public class WeaponManager : MonoBehaviour
         {
             currentGunScript = weaponModel.GetComponentInChildren<Gun>();
         }
+    }
 
-        // Update FPS controller with new gun
-        if (fpsController != null && currentGunScript != null)
+    /// <summary>
+    /// Fires the currently equipped gun
+    /// </summary>
+    public void Shoot()
+    {
+        if (currentGunScript != null)
         {
-            fpsController.gun = currentGunScript;
+            currentGunScript.Shoot();
         }
     }
 

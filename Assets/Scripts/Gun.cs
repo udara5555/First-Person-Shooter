@@ -142,6 +142,13 @@ public class Gun : MonoBehaviour
             {
                 health.TakeDamage(damage);
             }
+
+            // Try to get RemotePlayerHealth component (remote players)
+            var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
+            if (remoteHealth != null)
+            {
+                remoteHealth.TakeDamage(damage);
+            }
         }
     }
 
