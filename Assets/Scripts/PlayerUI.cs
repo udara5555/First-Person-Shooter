@@ -1,6 +1,6 @@
-using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine;
 
 public class PlayerUI : MonoBehaviour
 {
@@ -17,8 +17,18 @@ public class PlayerUI : MonoBehaviour
 
     void Start()
     {
-        // Get the Health component from the local player
-        playerHealth = GetComponent<Health>();
+        // Get the Health component from the local player (from ColyseusManager)
+        if (ColyseusManager.Instance != null && ColyseusManager.Instance.localPlayer != null)
+        {
+            playerHealth = ColyseusManager.Instance.localPlayer.GetComponent<Health>();
+        }
+
+        // Fallback: try to find it on this GameObject if the above fails
+        if (playerHealth == null)
+        {
+            playerHealth = GetComponent<Health>();
+        }
+
         if (playerHealth == null)
         {
             Debug.LogError("Health component not found on local player!");

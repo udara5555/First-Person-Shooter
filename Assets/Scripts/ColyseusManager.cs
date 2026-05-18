@@ -199,6 +199,15 @@ public class ColyseusManager : MonoBehaviour
         room.OnMessage<PlayerDamagedMessage>("playerDamaged", (message) =>
         {
             Debug.Log($"Player damaged: ID={message.playerId}, Health={message.health}, Damage={message.damage}");
+
+            // Apply damage to local player if this message is for them
+            if (message.playerId == room.SessionId && localPlayerHealth != null)
+            {
+                // Use the server's authoritative health value directly instead of calculating locally
+                // This ensures consistency with server state
+                localPlayerHealth.SetHealth(message.health);
+                Debug.Log($"Local player health set to: {message.health} (took {message.damage} damage)");
+            }
         });
     }
 

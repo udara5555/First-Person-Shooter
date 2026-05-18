@@ -77,4 +77,15 @@ public class Health : MonoBehaviour
     {
         return maxHealth;
     }
+
+    public void SetHealth(float newHealth)
+    {
+        currentHealth = newHealth;
+        Debug.Log($"[HEALTH] {gameObject.name} health set to {currentHealth}/{maxHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
 }

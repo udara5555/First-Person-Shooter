@@ -861,7 +861,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!114 &349750387
 MonoBehaviour:
@@ -885,7 +885,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!114 &349750388
 MonoBehaviour:
@@ -909,7 +909,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!114 &349750389
 MonoBehaviour:
@@ -933,7 +933,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!114 &349750390
 MonoBehaviour:
@@ -957,7 +957,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!1 &397684142 stripped
 GameObject:
@@ -3023,7 +3023,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!114 &1405948053
 MonoBehaviour:
@@ -3047,7 +3047,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!1 &1443928576 stripped
 GameObject:
@@ -3876,7 +3876,7 @@ MonoBehaviour:
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
   impactMarkScale: 0.05
   animator: {fileID: 0}
-  crosshair: {fileID: 0}
+  crosshair: {fileID: 1545695095}
   mainCamera: {fileID: 0}
 --- !u!1 &1763424376 stripped
 GameObject:
@@ -6593,7 +6593,6 @@ MonoBehaviour:
   mouseSensitivity: 2
   maxLookAngle: 80
   animator: {fileID: 0}
-  gun: {fileID: 5280876724719616187}
 --- !u!114 &6689853958293775908
 MonoBehaviour:
   m_ObjectHideFlags: 0

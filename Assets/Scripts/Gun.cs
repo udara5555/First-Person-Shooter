@@ -136,18 +136,40 @@ public class Gun : MonoBehaviour
             // Create bullet impact mark
             CreateImpactMark(hit);
 
-            // Try to get Health component (local player)
-            var health = hit.collider.GetComponent<Health>();
-            if (health != null)
+            // Check if we hit a remote player
+            var remotePlayerComponent = hit.collider.GetComponent<RemotePlayerComponent>();
+            if (remotePlayerComponent != null)
             {
-                health.TakeDamage(damage);
+                // Send damage to server for remote player
+                var room = ColyseusManager.Instance?.GetRoom();
+                if (room != null)
+                {
+                    room.Send("damage", new { targetPlayerId = remotePlayerComponent.SessionId, damage = damage });
+                    Debug.Log($"Sent damage message to server: target={remotePlayerComponent.SessionId}, damage={damage}");
+                }
+                
+                // Also apply damage locally for immediate feedback
+                var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
+                if (remoteHealth != null)
+                {
+                    remoteHealth.TakeDamage(damage);
+                }
             }
-
-            // Try to get RemotePlayerHealth component (remote players)
-            var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
-            if (remoteHealth != null)
+            else
             {
-                remoteHealth.TakeDamage(damage);
+                // Hit local player (self-damage)
+                var health = hit.collider.GetComponent<Health>();
+                if (health != null)
+                {
+                    health.TakeDamage(damage);
+                    // Send to server so other players see you taking damage
+                    var room = ColyseusManager.Instance?.GetRoom();
+                    if (room != null)
+                    {
+                        room.Send("damage", new { targetPlayerId = room.SessionId, damage = damage });
+                        Debug.Log($"Sent damage message to server for self-damage: damage={damage}");
+                    }
+                }
             }
         }
     }
