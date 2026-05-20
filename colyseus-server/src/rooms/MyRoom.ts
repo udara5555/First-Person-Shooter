@@ -41,6 +41,7 @@ export class MyRoom extends Room {
             player.y = 0;
             player.z = 0;
             player.skin = this.playerSkins.get(client.sessionId) || "Skin1";
+            player.currentWeaponId = data.weaponId || "ak47";
             this.s.players.set(client.sessionId, player);
             console.log("PLAYER SKIN SET TO:", player.skin);
         });
@@ -53,6 +54,7 @@ export class MyRoom extends Room {
             player.z = data.z ?? player.z;
             player.rotY = data.rotY ?? player.rotY;
             player.isWalking = data.isWalking ?? player.isWalking;
+            //player.currentWeaponId = data.currentWeaponId ?? player.currentWeaponId;
         });
 
         this.onMessage("changeSkin", (client: Client, data: any) => {
@@ -60,6 +62,18 @@ export class MyRoom extends Room {
             if (!player) return;
             player.skin = data.skin || "Skin1";
             console.log("PLAYER SKIN CHANGED:", client.sessionId, "to", player.skin);
+        });
+
+        this.onMessage("switchWeapon", (client: Client, data: any) => {
+            const player = this.s.players.get(client.sessionId);
+            if (!player) return;
+            player.currentWeaponId = data.weaponId || "ak47";
+            console.log("PLAYER SWITCHED WEAPON:", client.sessionId, "to", player.currentWeaponId);
+            
+            this.broadcast("weaponSwitched", {
+                playerId: client.sessionId,
+                weaponId: player.currentWeaponId
+            })
         });
 
         this.onMessage("damage", (client: Client, data: any) => {
@@ -125,8 +139,9 @@ export class MyRoom extends Room {
         player.y = 0;
         player.z = 0;
         player.skin = this.playerSkins.get(client.sessionId) || "default";
+        player.currentWeaponId = options.weaponId || "ak47";
         this.s.players.set(client.sessionId, player);
-        console.log("PLAYER ADDED TO STATE:", client.sessionId, "with skin:", player.skin);
+        console.log("PLAYER ADDED TO STATE:", client.sessionId, "with skin:", player.skin, "and weapon:", player.currentWeaponId);
 
         // Send current game state to newly joined player
         client.send("gameState", {

@@ -55,11 +55,6 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        HandleWeaponSwitching();
-    }
-
     private void InitializeWeapons()
     {
         // Get selected weapons from LobbyData
@@ -72,22 +67,8 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    private void HandleWeaponSwitching()
-    {
-        // Press 1 to switch to first weapon
-        if (Input.GetKeyDown(KeyCode.Alpha1) && selectedWeaponIds.Count >= 1)
-        {
-            EquipWeapon(0);
-        }
-
-        // Press 2 to switch to second weapon
-        if (Input.GetKeyDown(KeyCode.Alpha2) && selectedWeaponIds.Count >= 2)
-        {
-            EquipWeapon(1);
-        }
-    }
-
-    private void EquipWeapon(int index)
+    // MOVED FROM Update() - now called explicitly from FPSController
+    public void EquipWeapon(int index)
     {
         if (selectedWeaponIds.Count == 0)
         {
@@ -150,6 +131,8 @@ public class WeaponManager : MonoBehaviour
         {
             currentGunScript = weaponModel.GetComponentInChildren<Gun>();
         }
+
+        Debug.Log($"Equipped weapon: {weaponId}");
     }
 
     /// <summary>
@@ -164,6 +147,14 @@ public class WeaponManager : MonoBehaviour
     }
 
     public int GetCurrentWeaponIndex() => currentWeaponIndex;
-    public string GetCurrentWeaponId() => selectedWeaponIds.Count > currentWeaponIndex && currentWeaponIndex >= 0 ? selectedWeaponIds[currentWeaponIndex] : "None";
     public Gun GetCurrentGun() => currentGunScript;
+
+    public string GetCurrentWeaponId()
+    {
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < selectedWeaponIds.Count)
+        {
+            return selectedWeaponIds[currentWeaponIndex];
+        }
+        return "ak47"; // Default fallback
+    }
 }

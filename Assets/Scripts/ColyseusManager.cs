@@ -1,4 +1,4 @@
-using Colyseus;
+﻿using Colyseus;
 using Colyseus.Schema;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +22,9 @@ public class ColyseusManager : MonoBehaviour
     private static Client passedClient;
     private FPSController fpsController;
     private Health localPlayerHealth;
+    private WeaponManager weaponManager;
+    private string lastSentWeaponId = "";
+    private bool initialized = false;
 
     class RemoteData
     {
@@ -33,6 +36,8 @@ public class ColyseusManager : MonoBehaviour
         public string sessionId;
         public float lastHealth;
         public string currentSkin;
+        public string currentWeaponId;
+        public RemotePlayerComponent remoteComponent;
     }
     readonly Dictionary<string, RemoteData> remotes = new();
 
@@ -60,8 +65,12 @@ public class ColyseusManager : MonoBehaviour
         }
 
         Debug.Log("Connected as: " + LobbyData.PlayerName + " | Room: " + room.RoomId);
+        Debug.Log($"[START] MY SESSION ID: {room.SessionId}");
+
         fpsController = localPlayer.GetComponent<FPSController>();
         localPlayerHealth = localPlayer.GetComponent<Health>();
+        weaponManager = localPlayer.GetComponent<WeaponManager>();
+
         HookCallbacks();
     }
 
@@ -86,31 +95,52 @@ public class ColyseusManager : MonoBehaviour
     {
         var cb = Callbacks.Get(room);
 
-        // NEW: Listen for timeRemaining changes from server
-        /*cb.OnChange(room.State, () =>
+        room.OnMessage<WeaponSwitchedMessage>("weaponSwitched", (message) =>
         {
-            Debug.Log($"Game state changed - TimeRemaining: {room.State.timeRemaining}, IsGameActive: {room.State.isGameActive}");
-        });*/
+            Debug.Log($"\n>>> weaponSwitched MESSAGE RECEIVED <<<");
+            Debug.Log($"SenderSessionId: {message.playerId}");
+            Debug.Log($"MySessionId: {room.SessionId}");
+            Debug.Log($"WeaponId: {message.weaponId}");
+            Debug.Log($"Is this my weapon? {message.playerId == room.SessionId}");
+
+            if (message.playerId != room.SessionId && remotes.TryGetValue(message.playerId, out var rd))
+            {
+                Debug.Log($"Applying weapon to remote player: {rd.go.name}");
+                ApplyWeaponToRemotePlayer(rd.go, message.weaponId);
+                rd.currentWeaponId = message.weaponId;
+                Debug.Log($"✓ Applied\n");
+            }
+            else if (message.playerId == room.SessionId)
+            {
+                Debug.Log($"Ignoring my own weapon change\n");
+            }
+            else
+            {
+                Debug.LogWarning($"Remote player {message.playerId} NOT FOUND\n");
+            }
+        });
 
         cb.OnAdd(state => state.players, (sessionId, player) =>
         {
-            if (sessionId == room.SessionId) return;
+            Debug.Log($"\n>>> OnAdd CALLBACK <<<");
+            Debug.Log($"PlayerSessionId: {sessionId}");
+            Debug.Log($"MySessionId: {room.SessionId}");
 
-            Debug.Log($"Spawning remote player {sessionId} at position ({player.x}, {player.y}, {player.z})");
+            if (sessionId == room.SessionId)
+            {
+                Debug.Log($">>> This is MY player, SKIPPING\n");
+                return;
+            }
+
+            Debug.Log($">>> Spawning remote player {sessionId}");
+            Debug.Log($"Initial weapon from server: {player.currentWeaponId}");
 
             var go = Instantiate(remotePlayerPrefab);
             go.transform.position = new Vector3(player.x, player.y, player.z);
             go.tag = "RemotePlayer";
             go.name = $"RemotePlayer_{sessionId}";
 
-            Debug.Log($"Remote player {sessionId} instantiated at {go.transform.position}");
-
             var animator = go.GetComponent<Animator>();
-            if (animator == null)
-            {
-                Debug.LogWarning($"Remote player {sessionId} instantiated without an Animator component!");
-            }
-
             var remoteComponent = go.AddComponent<RemotePlayerComponent>();
             remoteComponent.SessionId = sessionId;
 
@@ -123,20 +153,19 @@ public class ColyseusManager : MonoBehaviour
                 lastIsWalking = player.isWalking,
                 sessionId = sessionId,
                 lastHealth = player.health,
-                currentSkin = player.skin
+                currentSkin = player.skin,
+                currentWeaponId = player.currentWeaponId,
+                remoteComponent = remoteComponent
             };
 
             if (animator != null)
             {
                 animator.SetBool("isWalking", player.isWalking);
-                Debug.Log($"Remote player {sessionId} spawned with isWalking: {player.isWalking}");
             }
 
-            // Apply skin to remote player
             ApplySkinToRemotePlayer(go, player.skin);
-            Debug.Log($"Remote player {sessionId} spawned with skin: {player.skin}");
-
-            
+            ApplyWeaponToRemotePlayer(go, player.currentWeaponId);
+            Debug.Log($"✓ Remote player {sessionId} spawned with weapon: {player.currentWeaponId}\n");
 
             cb.OnChange(player, () =>
             {
@@ -149,25 +178,32 @@ public class ColyseusManager : MonoBehaviour
                 {
                     rd.animator.SetBool("isWalking", player.isWalking);
                     rd.lastIsWalking = player.isWalking;
-                    Debug.Log($"Remote player {sessionId} isWalking changed to: {player.isWalking}");
                 }
 
-                // UPDATED: Handle skin changes with direct material assignment
                 if (rd.currentSkin != player.skin)
                 {
                     ApplySkinToRemotePlayer(rd.go, player.skin);
                     rd.currentSkin = player.skin;
-                    Debug.Log($"Remote player {sessionId} skin changed to: {player.skin}");
+                }
+
+                // WEAPON CHANGE DETECTION
+                if (rd.currentWeaponId != player.currentWeaponId)
+                {
+                    Debug.Log($"\n>>> WEAPON CHANGE DETECTED <<<");
+                    Debug.Log($"RemotePlayer: {sessionId}");
+                    Debug.Log($"OldWeapon: {rd.currentWeaponId}");
+                    Debug.Log($"NewWeapon: {player.currentWeaponId}");
+                    Debug.Log($"GameObject: {rd.go.name}");
+                    ApplyWeaponToRemotePlayer(rd.go, player.currentWeaponId);
+                    rd.currentWeaponId = player.currentWeaponId;
+                    Debug.Log($"✓ Weapon applied\n");
                 }
 
                 if (rd.lastHealth != player.health)
                 {
-                    Debug.Log($"Remote player {sessionId} health changed from {rd.lastHealth} to {player.health}");
                     rd.lastHealth = player.health;
-
-                    var remoteComponent = rd.go.GetComponent<RemotePlayerComponent>();
-                    if (remoteComponent != null)
-                        remoteComponent.UpdateHealth(player.health, player.maxHealth);
+                    if (rd.remoteComponent != null)
+                        rd.remoteComponent.UpdateHealth(player.health, player.maxHealth);
                 }
             });
         });
@@ -181,12 +217,9 @@ public class ColyseusManager : MonoBehaviour
 
         room.OnMessage<PlayerDeathMessage>("playerDied", (message) =>
         {
-            Debug.Log($"Player died: {message.playerId}");
-
             if (message.playerId == room.SessionId)
             {
-                Debug.Log("Local player died! Returning to lobby...");
-                ReturnToLobby();
+                OnLocalPlayerDied();
             }
             else if (remotes.TryGetValue(message.playerId, out var rd))
             {
@@ -198,33 +231,22 @@ public class ColyseusManager : MonoBehaviour
 
         room.OnMessage<PlayerDamagedMessage>("playerDamaged", (message) =>
         {
-            Debug.Log($"Player damaged: ID={message.playerId}, Health={message.health}, Damage={message.damage}");
-
-            // Apply damage to local player if this message is for them
             if (message.playerId == room.SessionId && localPlayerHealth != null)
             {
-                // Use the server's authoritative health value directly instead of calculating locally
-                // This ensures consistency with server state
                 localPlayerHealth.SetHealth(message.health);
-                Debug.Log($"Local player health set to: {message.health} (took {message.damage} damage)");
             }
         });
     }
 
-    // NEW METHOD: Apply skin directly by finding renderers
     private void ApplySkinToRemotePlayer(GameObject playerGo, string skinName)
     {
         Material skinMaterial = GetMaterialBySkinName(skinName);
-
-        // Find all renderers in the player and its children
         Renderer[] renderers = playerGo.GetComponentsInChildren<Renderer>();
 
         foreach (var renderer in renderers)
         {
-            // Skip the health bar canvas
             if (renderer.gameObject.name.Contains("HealthBar")) continue;
 
-            // Apply skin material to all materials in the renderer
             Material[] materials = renderer.materials;
             for (int i = 0; i < materials.Length; i++)
             {
@@ -232,14 +254,119 @@ public class ColyseusManager : MonoBehaviour
             }
             renderer.materials = materials;
         }
-
-        Debug.Log($"Applied skin '{skinName}' to remote player {playerGo.name}");
     }
 
-    // NEW METHOD: Get material by skin name
+    private void ApplyWeaponToRemotePlayer(GameObject playerGo, string weaponId)
+    {
+        if (string.IsNullOrEmpty(weaponId))
+            weaponId = "ak47";
+
+        Debug.Log($"\n[ApplyWeapon] Applying '{weaponId}' to {playerGo.name}");
+
+        // Find Gun container - try multiple paths
+        Transform gunContainer = null;
+        
+        // Try direct child first (remote player structure)
+        gunContainer = playerGo.transform.Find("Gun");
+        if (gunContainer != null)
+        {
+            Debug.Log($"✓ Found Gun as direct child of {playerGo.name}");
+        }
+        
+        // Try under Spine1 (remote player structure)
+        if (gunContainer == null)
+        {
+            Transform spine1 = playerGo.transform.Find("Spine1");
+            if (spine1 != null)
+            {
+                gunContainer = spine1.Find("Gun");
+                if (gunContainer != null)
+                {
+                    Debug.Log($"✓ Found Gun under Spine1");
+                }
+            }
+        }
+        
+        // Try under Main Camera (local player structure)
+        if (gunContainer == null)
+        {
+            Transform spine1 = playerGo.transform.Find("Spine1");
+            if (spine1 != null)
+            {
+                Transform mainCamera = spine1.Find("Main Camera");
+                if (mainCamera != null)
+                {
+                    gunContainer = mainCamera.Find("Gun");
+                    if (gunContainer != null)
+                    {
+                        Debug.Log($"✓ Found Gun under Main Camera");
+                    }
+                }
+            }
+        }
+        
+        // Recursive search as last resort
+        if (gunContainer == null)
+        {
+            Transform[] allTransforms = playerGo.GetComponentsInChildren<Transform>();
+            foreach (Transform t in allTransforms)
+            {
+                if (t.name == "Gun")
+                {
+                    gunContainer = t;
+                    Debug.Log($"✓ Found Gun via recursive search");
+                    break;
+                }
+            }
+        }
+
+        if (gunContainer == null)
+        {
+            Debug.LogError($"✗ Gun container NOT FOUND in {playerGo.name}!");
+            return;
+        }
+
+        Dictionary<string, int> weaponIndexMap = new Dictionary<string, int>
+        {
+            { "mp5", 0 },
+            { "shotgun", 1 },
+            { "smg", 2 },
+            { "uzi", 3 },
+            { "m16", 4 },
+            { "sniper", 5 },
+            { "magnum", 6 },
+            { "ak47", 7 },
+            { "lmg", 8 }
+        };
+
+        // Deactivate all weapons
+        for (int i = 0; i < gunContainer.childCount; i++)
+        {
+            gunContainer.GetChild(i).gameObject.SetActive(false);
+        }
+
+        // Get weapon index
+        if (!weaponIndexMap.TryGetValue(weaponId, out int gunIndex))
+        {
+            Debug.LogError($"✗ Weapon '{weaponId}' not in map!");
+            return;
+        }
+
+        // Validate index
+        if (gunIndex >= gunContainer.childCount)
+        {
+            Debug.LogError($"✗ Index {gunIndex} out of range! Available: 0-{gunContainer.childCount - 1}");
+            return;
+        }
+
+        // Activate weapon
+        Transform weapon = gunContainer.GetChild(gunIndex);
+        weapon.gameObject.SetActive(true);
+        Debug.Log($"✓ Activated {weapon.name} at index {gunIndex}\n");
+    }
+
     private Material GetMaterialBySkinName(string skinName)
     {
-        // Reference materials from the local player
         var localSkinApplier = localPlayer?.GetComponent<PlayerSkinApplier>();
 
         if (localSkinApplier != null)
@@ -252,7 +379,6 @@ public class ColyseusManager : MonoBehaviour
             };
         }
 
-        // Fallback: try to find materials from the prefab
         var prefabSkinApplier = remotePlayerPrefab.GetComponent<PlayerSkinApplier>();
         if (prefabSkinApplier != null)
         {
@@ -264,31 +390,43 @@ public class ColyseusManager : MonoBehaviour
             };
         }
 
-        Debug.LogError("Could not find skin materials!");
         return null;
     }
 
     void ReturnToLobby()
     {
-        Time.timeScale = 1f; // Ensure time is running
+        Time.timeScale = 1f;
 
-        // Leave the room
         if (room != null)
         {
             room.Leave();
             room = null;
         }
 
-        // Clear remotes
         remotes.Clear();
 
-        // Load lobby scene
-        Debug.Log("Loading Lobby scene...");
         SceneManager.LoadScene("Lobby");
     }
 
     void Update()
     {
+        // Initialize after first frame to ensure all Start() methods have run
+        if (!initialized && weaponManager != null && room != null)
+        {
+            initialized = true;
+
+            string initialWeapon = weaponManager.GetCurrentWeaponId();
+            Debug.Log($"\n[INIT] === INITIAL WEAPON SYNC ===");
+            Debug.Log($"[INIT] My session: {room.SessionId}");
+            Debug.Log($"[INIT] Initial weapon: {initialWeapon}");
+
+            room.Send("switchWeapon", new Dictionary<string, object> {
+                { "weaponId", initialWeapon }
+            });
+            lastSentWeaponId = initialWeapon;
+            Debug.Log($"[INIT] ✓ Sent\n");
+        }
+
         if (room == null || localPlayer == null) return;
 
         sendTimer += Time.deltaTime;
@@ -303,6 +441,19 @@ public class ColyseusManager : MonoBehaviour
                 { "x", pos.x }, { "y", pos.y }, { "z", pos.z },
                 { "rotY", rotY }, { "isWalking", isWalking }
             });
+        }
+
+        if (weaponManager != null)
+        {
+            string currentWeaponId = weaponManager.GetCurrentWeaponId();
+            if (currentWeaponId != lastSentWeaponId)
+            {
+                lastSentWeaponId = currentWeaponId;
+                Debug.Log($"[UPDATE] Sending my weapon switch: {currentWeaponId}");
+                room.Send("switchWeapon", new Dictionary<string, object> {
+                    { "weaponId", currentWeaponId }
+                });
+            }
         }
 
         foreach (var kv in remotes)
@@ -327,4 +478,10 @@ public class PlayerDamagedMessage
 public class PlayerDeathMessage
 {
     public string playerId;
+}
+
+public class WeaponSwitchedMessage
+{
+    public string playerId;
+    public string weaponId;
 }

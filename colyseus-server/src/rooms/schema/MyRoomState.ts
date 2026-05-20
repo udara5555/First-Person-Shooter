@@ -9,6 +9,7 @@ export class FPSPlayer extends Schema {
     @type("float32") health: number = 100;
     @type("float32") maxHealth: number = 100;
     @type("string") skin: string = "default";
+    @type("string") currentWeaponId: string = "ak47";
 }
 
 export class MyRoomState extends Schema {

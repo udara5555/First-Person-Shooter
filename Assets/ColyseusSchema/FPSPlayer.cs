@@ -38,5 +38,8 @@ public FPSPlayer() { }
 
 	[Type(7, "string")]
 	public string skin = default(string);
+
+	[Type(8, "string")]
+	public string currentWeaponId = default(string);
 }
 

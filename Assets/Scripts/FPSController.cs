@@ -38,6 +38,7 @@ public class FPSController : MonoBehaviour
     {
         HandleMovement();
         HandleMouseLook();
+        HandleWeaponSwitching();
         HandleShooting();
     }
 
@@ -80,6 +81,23 @@ public class FPSController : MonoBehaviour
 
         if (cam != null)
             cam.transform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+    }
+
+    private void HandleWeaponSwitching()
+    {
+        // Press 1 to switch to first weapon
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (weaponManager != null)
+                weaponManager.EquipWeapon(0);
+        }
+
+        // Press 2 to switch to second weapon
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            if (weaponManager != null)
+                weaponManager.EquipWeapon(1);
+        }
     }
 
     private void HandleShooting()
