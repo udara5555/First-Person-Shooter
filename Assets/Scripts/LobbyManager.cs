@@ -98,7 +98,7 @@ public class LobbyManager : MonoBehaviour
     {
         if (room == null) return;
 
-        GUIUtility.systemCopyBuffer = room.RoomId;
+        JSLibHolder.CopyToClipboard(room.RoomId);
         Debug.Log("Room ID copied to clipboard: " + room.RoomId);
     }
 }
