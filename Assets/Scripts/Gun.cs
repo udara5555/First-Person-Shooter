@@ -8,6 +8,11 @@ public class Gun : MonoBehaviour
     public float bulletSpeed = 50f;
     public float shootRange = 100f;
 
+    [Header("Magazine")]
+    public int magazineSize = 30;
+    public float reloadTime = 2f;
+    public bool autoReload = true;
+
     [Header("Effects")]
     public Transform shootPoint;
     public GameObject muzzleFlash;
@@ -25,7 +30,10 @@ public class Gun : MonoBehaviour
     public Camera mainCamera;
 
     private float shootCooldown = 0f;
+    private float reloadCooldown = 0f;
+    private int currentAmmo;
     private AudioSource audioSource;
+    private bool isReloading = false;
 
     void Start()
     {
@@ -63,21 +71,49 @@ public class Gun : MonoBehaviour
 
         if (bulletImpactPrefab == null)
             Debug.LogWarning("bulletImpactPrefab is not assigned in Gun script!");
+
+        // Initialize ammo
+        currentAmmo = magazineSize;
     }
 
     void Update()
     {
         // Decrement cooldown (important for fire rate)
         shootCooldown -= Time.deltaTime;
+
+        // Update reload cooldown
+        if (isReloading)
+        {
+            reloadCooldown -= Time.deltaTime;
+            if (reloadCooldown <= 0)
+            {
+                CompleteReload();
+            }
+        }
+
+        // Auto-reload if magazine is empty and not already reloading
+        if (autoReload && currentAmmo == 0 && !isReloading)
+        {
+            Reload();
+        }
     }
 
     public void Shoot()
     {
+        // Check if reloading
+        if (isReloading)
+            return;
+
+        // Check if out of ammo
+        if (currentAmmo <= 0)
+            return;
+
         // Check cooldown
         if (shootCooldown > 0)
             return;
 
         shootCooldown = fireRate;
+        currentAmmo--;
 
         // Verify camera is assigned
         if (mainCamera == null)
@@ -147,7 +183,7 @@ public class Gun : MonoBehaviour
                     room.Send("damage", new { targetPlayerId = remotePlayerComponent.SessionId, damage = damage });
                     Debug.Log($"Sent damage message to server: target={remotePlayerComponent.SessionId}, damage={damage}");
                 }
-                
+
                 // Also apply damage locally for immediate feedback
                 var remoteHealth = hit.collider.GetComponent<RemotePlayerHealth>();
                 if (remoteHealth != null)
@@ -174,6 +210,42 @@ public class Gun : MonoBehaviour
         }
     }
 
+    public void Reload()
+    {
+        // Cannot reload if already reloading
+        if (isReloading)
+            return;
+
+        // Cannot reload if magazine is full
+        if (currentAmmo == magazineSize)
+            return;
+
+        isReloading = true;
+        reloadCooldown = reloadTime;
+
+        // Play reload animation
+        if (animator != null)
+        {
+            try
+            {
+                animator.SetTrigger("Reload");
+            }
+            catch (System.Exception)
+            {
+                // Parameter doesn't exist, ignore
+            }
+        }
+
+        Debug.Log($"Reloading {gameObject.name}... ({reloadTime}s)");
+    }
+
+    private void CompleteReload()
+    {
+        isReloading = false;
+        currentAmmo = magazineSize;
+        Debug.Log($"Reload complete! Ammo: {currentAmmo}/{magazineSize}");
+    }
+
     void CreateImpactMark(RaycastHit hit)
     {
         if (bulletImpactPrefab == null)
@@ -192,5 +264,29 @@ public class Gun : MonoBehaviour
 
         if (impact.GetComponent<BulletImpact>() == null)
             impact.AddComponent<BulletImpact>();
+    }
+
+    /// <summary>
+    /// Returns current ammo count
+    /// </summary>
+    public int GetCurrentAmmo()
+    {
+        return currentAmmo;
+    }
+
+    /// <summary>
+    /// Returns magazine size
+    /// </summary>
+    public int GetMagazineSize()
+    {
+        return magazineSize;
+    }
+
+    /// <summary>
+    /// Returns whether gun is currently reloading
+    /// </summary>
+    public bool IsReloading()
+    {
+        return isReloading;
     }
 }

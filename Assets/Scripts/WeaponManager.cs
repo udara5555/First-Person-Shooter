@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class WeaponManager : MonoBehaviour
 {
@@ -143,6 +143,17 @@ public class WeaponManager : MonoBehaviour
         if (currentGunScript != null)
         {
             currentGunScript.Shoot();
+        }
+    }
+
+    /// <summary>
+    /// Reloads the currently equipped gun
+    /// </summary>
+    public void Reload()
+    {
+        if (currentGunScript != null)
+        {
+            currentGunScript.Reload();
         }
     }
 

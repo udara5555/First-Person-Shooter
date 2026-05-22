@@ -4345,6 +4345,8 @@ MonoBehaviour:
   damage: 15
   bulletSpeed: 50
   shootRange: 20
+  magazineSize: 7
+  reloadTime: 7
   shootPoint: {fileID: 5927492590340999442}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -4434,6 +4436,8 @@ MonoBehaviour:
   damage: 13
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 100
+  reloadTime: 4
   shootPoint: {fileID: 4871516143383093275}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -4558,6 +4562,8 @@ MonoBehaviour:
   damage: 10
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 30
+  reloadTime: 2
   shootPoint: {fileID: 5927492590340999442}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -5380,6 +5386,8 @@ MonoBehaviour:
   damage: 6
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 30
+  reloadTime: 2
   shootPoint: {fileID: 8336561949710475694}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6147,6 +6155,8 @@ MonoBehaviour:
   damage: 5
   bulletSpeed: 50
   shootRange: 75
+  magazineSize: 28
+  reloadTime: 2
   shootPoint: {fileID: 6329813186310825777}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6171,6 +6181,8 @@ MonoBehaviour:
   damage: 6
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 30
+  reloadTime: 2
   shootPoint: {fileID: 1765038244648133512}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6439,6 +6451,8 @@ MonoBehaviour:
   damage: 10
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 30
+  reloadTime: 2
   shootPoint: {fileID: 4722839263922424634}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6463,6 +6477,8 @@ MonoBehaviour:
   damage: 13
   bulletSpeed: 75
   shootRange: 200
+  magazineSize: 5
+  reloadTime: 2
   shootPoint: {fileID: 8355129631963818109}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6531,6 +6547,8 @@ MonoBehaviour:
   damage: 10
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 6
+  reloadTime: 3
   shootPoint: {fileID: 1695487187199055154}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -6976,6 +6994,8 @@ MonoBehaviour:
   damage: 10
   bulletSpeed: 50
   shootRange: 100
+  magazineSize: 30
+  reloadTime: 2
   shootPoint: {fileID: 4524699618805879677}
   muzzleFlash: {fileID: 0}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
@@ -7318,9 +7338,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4afc772957b56a41a39a20c4267faf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FPSController
-  moveSpeed: 8
+  moveSpeed: 7
+  sprintSpeed: 15
   jumpForce: 10
-  gravity: -9.81
+  gravity: -15
+  maxStamina: 100
+  staminaDrainRate: 30
+  staminaRegenRate: 20
   mouseSensitivity: 2
   maxLookAngle: 80
   animator: {fileID: 0}
