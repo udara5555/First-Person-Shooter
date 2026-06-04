@@ -228,7 +228,7 @@ public class Gun : MonoBehaviour
         {
             try
             {
-                animator.SetTrigger("Reload");
+                animator.SetBool("isReloading", true);
             }
             catch (System.Exception)
             {
@@ -243,6 +243,20 @@ public class Gun : MonoBehaviour
     {
         isReloading = false;
         currentAmmo = magazineSize;
+
+        // Stop reload animation
+        if (animator != null)
+        {
+            try
+            {
+                animator.SetBool("isReloading", false);
+            }
+            catch (System.Exception)
+            {
+                // Parameter doesn't exist, ignore
+            }
+        }
+
         Debug.Log($"Reload complete! Ammo: {currentAmmo}/{magazineSize}");
     }
 
