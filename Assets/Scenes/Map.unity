@@ -4382,7 +4382,7 @@ MonoBehaviour:
   reloadTime: 4
   autoReload: 1
   shootPoint: {fileID: 5927492590340999442}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 03feb8ce66777a847a3c9c0fea8d87ef, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -4475,7 +4475,7 @@ MonoBehaviour:
   reloadTime: 4
   autoReload: 1
   shootPoint: {fileID: 4871516143383093275}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -5429,7 +5429,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 8336561949710475694}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -6200,7 +6200,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 6329813186310825777}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -6228,7 +6228,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 1765038244648133512}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -6500,7 +6500,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 4722839263922424634}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -6528,7 +6528,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 8355129631963818109}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -6600,7 +6600,7 @@ MonoBehaviour:
   reloadTime: 3
   autoReload: 1
   shootPoint: {fileID: 1695487187199055154}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 9fca58c0eca2d044995712d11f7dfab8, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
@@ -7049,7 +7049,7 @@ MonoBehaviour:
   reloadTime: 2
   autoReload: 1
   shootPoint: {fileID: 4524699618805879677}
-  muzzleFlash: {fileID: 0}
+  muzzleFlash: {fileID: 3691489234425176535, guid: a9e07cf3bf1c5cf4e94dc845fadebe0f, type: 3}
   shootSound: {fileID: 8300000, guid: 4a2b9148f873b244bb6c9c657a8a709f, type: 3}
   reloadSound: {fileID: 8300000, guid: 44ab0c6e541d7a64daf52ef707d69c0c, type: 3}
   bulletImpactPrefab: {fileID: 4146184724003068924, guid: eed1858d1bcae6c4d9837a42869740d8, type: 3}
