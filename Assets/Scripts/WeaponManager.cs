@@ -158,7 +158,10 @@ public class WeaponManager : MonoBehaviour
     }
 
     public int GetCurrentWeaponIndex() => currentWeaponIndex;
+
     public Gun GetCurrentGun() => currentGunScript;
+
+    public Transform GetGunContainer() => gunContainer;
 
     public string GetCurrentWeaponId()
     {
@@ -167,5 +170,14 @@ public class WeaponManager : MonoBehaviour
             return selectedWeaponIds[currentWeaponIndex];
         }
         return "ak47"; // Default fallback
+    }
+
+    public int GetGunModelIndexFromId(string weaponId)
+    {
+        if (weaponIndexMap.ContainsKey(weaponId))
+        {
+            return weaponIndexMap[weaponId];
+        }
+        return -1;
     }
 }
