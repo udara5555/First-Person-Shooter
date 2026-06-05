@@ -17,6 +17,7 @@ public class Gun : MonoBehaviour
     public Transform shootPoint;
     public GameObject muzzleFlash;
     public AudioClip shootSound;
+    public AudioClip reloadSound;
     public GameObject bulletImpactPrefab;
     public float impactMarkScale = 2f;
 
@@ -235,6 +236,10 @@ public class Gun : MonoBehaviour
                 // Parameter doesn't exist, ignore
             }
         }
+
+        // Play reload sound
+        if (reloadSound != null && audioSource != null)
+            audioSource.PlayOneShot(reloadSound);
 
         Debug.Log($"Reloading {gameObject.name}... ({reloadTime}s)");
     }
