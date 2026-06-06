@@ -84,7 +84,7 @@ public class FPSController : MonoBehaviour
         if (animator != null)
         {
             animator.SetBool("isWalking", isMoving);
-            animator.SetBool("IsSprinting", isSprinting);
+            animator.SetBool("isSprinting", isSprinting);
         }
     }
 
