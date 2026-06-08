@@ -28,6 +28,7 @@ public class FPSController : MonoBehaviour
     private bool isSprinting = false;
     private float currentStamina;
     private WeaponManager weaponManager;
+    private bool isReloading = false;
 
     void Start()
     {
@@ -59,9 +60,9 @@ public class FPSController : MonoBehaviour
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        // Check sprint input
+        // Check sprint input - cannot sprint while reloading
         bool sprintInput = Input.GetKey(KeyCode.LeftShift);
-        isSprinting = sprintInput && (x != 0 || z != 0) && cc.isGrounded && currentStamina > 0;
+        isSprinting = sprintInput && (x != 0 || z != 0) && cc.isGrounded && currentStamina > 0 && !isReloading;
 
         // Apply gravity
         velocity.y += gravity * Time.deltaTime;
@@ -83,7 +84,8 @@ public class FPSController : MonoBehaviour
         isMoving = x != 0 || z != 0;
         if (animator != null)
         {
-            animator.SetBool("isWalking", isMoving);
+            // Keep walking animation when reloading while moving
+            animator.SetBool("isWalking", isMoving && !isSprinting);
             animator.SetBool("isSprinting", isSprinting);
         }
     }
@@ -121,9 +123,16 @@ public class FPSController : MonoBehaviour
 
     private void HandleShooting()
     {
-        if (weaponManager != null && Input.GetMouseButton(0))
+        // Cannot fire while sprinting or reloading
+        if (weaponManager != null && Input.GetMouseButton(0) && !isReloading && !isSprinting)
         {
             weaponManager.Shoot();
+        }
+        
+        // Stop sprinting when player tries to shoot (exit sprint to walk mode)
+        if (Input.GetMouseButton(0) && isSprinting)
+        {
+            isSprinting = false;
         }
     }
 
@@ -133,7 +142,11 @@ public class FPSController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             if (weaponManager != null)
+            {
                 weaponManager.Reload();
+                // Stop sprinting when reload starts
+                isSprinting = false;
+            }
         }
     }
 
@@ -149,6 +162,14 @@ public class FPSController : MonoBehaviour
             currentStamina += staminaRegenRate * Time.deltaTime;
             currentStamina = Mathf.Min(maxStamina, currentStamina);
         }
+    }
+
+    /// <summary>
+    /// Updates the reloading state - called by WeaponManager
+    /// </summary>
+    public void SetIsReloading(bool reloading)
+    {
+        isReloading = reloading;
     }
 
     /// <summary>

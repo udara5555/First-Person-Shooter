@@ -224,6 +224,11 @@ public class Gun : MonoBehaviour
         isReloading = true;
         reloadCooldown = reloadTime;
 
+        // Notify FPSController that we're reloading (to disable sprinting)
+        FPSController fpsController = GetComponentInParent<FPSController>();
+        if (fpsController != null)
+            fpsController.SetIsReloading(true);
+
         // Play reload animation
         if (animator != null)
         {
@@ -248,6 +253,11 @@ public class Gun : MonoBehaviour
     {
         isReloading = false;
         currentAmmo = magazineSize;
+
+        // Notify FPSController that reload is complete
+        FPSController fpsController = GetComponentInParent<FPSController>();
+        if (fpsController != null)
+            fpsController.SetIsReloading(false);
 
         // Stop reload animation
         if (animator != null)
