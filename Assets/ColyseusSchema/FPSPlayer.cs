@@ -30,16 +30,22 @@ public FPSPlayer() { }
 	[Type(4, "boolean")]
 	public bool isWalking = default(bool);
 
-	[Type(5, "float32")]
+	[Type(5, "boolean")]
+	public bool isSprinting = default(bool);
+
+	[Type(6, "boolean")]
+	public bool isReloading = default(bool);
+
+	[Type(7, "float32")]
 	public float health = default(float);
 
-	[Type(6, "float32")]
+	[Type(8, "float32")]
 	public float maxHealth = default(float);
 
-	[Type(7, "string")]
+	[Type(9, "string")]
 	public string skin = default(string);
 
-	[Type(8, "string")]
+	[Type(10, "string")]
 	public string currentWeaponId = default(string);
 }
 

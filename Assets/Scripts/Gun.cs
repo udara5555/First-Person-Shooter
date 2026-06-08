@@ -308,4 +308,9 @@ public class Gun : MonoBehaviour
     {
         return isReloading;
     }
+
+    public bool GetIsReloading()
+    {
+        return isReloading;
+    }
 }

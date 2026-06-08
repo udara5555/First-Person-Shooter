@@ -157,6 +157,18 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns true if the current gun is reloading
+    /// </summary>
+    public bool GetIsReloading()
+    {
+        if (currentGunScript != null)
+        {
+            return currentGunScript.GetIsReloading();
+        }
+        return false;
+    }
+
     public int GetCurrentWeaponIndex() => currentWeaponIndex;
 
     public Gun GetCurrentGun() => currentGunScript;

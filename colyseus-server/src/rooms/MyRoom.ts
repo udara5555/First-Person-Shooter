@@ -54,6 +54,8 @@ export class MyRoom extends Room {
             player.z = data.z ?? player.z;
             player.rotY = data.rotY ?? player.rotY;
             player.isWalking = data.isWalking ?? player.isWalking;
+            player.isSprinting = data.isSprinting; 
+            player.isReloading = data.isReloading;
             //player.currentWeaponId = data.currentWeaponId ?? player.currentWeaponId;
         });
 
@@ -74,6 +76,20 @@ export class MyRoom extends Room {
                 playerId: client.sessionId,
                 weaponId: player.currentWeaponId
             })
+        });
+
+        this.onMessage("sprint", (client: Client, data: any) => {
+            const player = this.s.players.get(client.sessionId);
+            if (!player) return;
+            player.isSprinting = data.isSprinting || false;
+            console.log("PLAYER SPRINT STATE:", client.sessionId, "isSprinting:", player.isSprinting);
+        });
+
+        this.onMessage("reload", (client: Client, data: any) => {
+            const player = this.s.players.get(client.sessionId);
+            if (!player) return;
+            player.isReloading = data.isReloading || false;
+            console.log("PLAYER RELOAD STATE:", client.sessionId, "isReloading:", player.isReloading);
         });
 
         this.onMessage("damage", (client: Client, data: any) => {

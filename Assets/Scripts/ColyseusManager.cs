@@ -24,6 +24,8 @@ public class ColyseusManager : MonoBehaviour
     private Health localPlayerHealth;
     private WeaponManager weaponManager;
     private string lastSentWeaponId = "";
+    private bool lastSentIsSprinting = false;
+    private bool lastSentIsReloading = false;
     private bool initialized = false;
 
     class RemoteData
@@ -33,6 +35,8 @@ public class ColyseusManager : MonoBehaviour
         public Quaternion targetRot;
         public Animator animator;
         public bool lastIsWalking = false;
+        public bool lastIsSprinting = false;
+        public bool lastIsReloading = false;
         public string sessionId;
         public float lastHealth;
         public string currentSkin;
@@ -151,6 +155,8 @@ public class ColyseusManager : MonoBehaviour
                 targetRot = Quaternion.Euler(0, player.rotY, 0),
                 animator = animator,
                 lastIsWalking = player.isWalking,
+                lastIsSprinting = player.isSprinting,
+                lastIsReloading = player.isReloading,
                 sessionId = sessionId,
                 lastHealth = player.health,
                 currentSkin = player.skin,
@@ -161,6 +167,8 @@ public class ColyseusManager : MonoBehaviour
             if (animator != null)
             {
                 animator.SetBool("isWalking", player.isWalking);
+                animator.SetBool("isSprinting", player.isSprinting);
+                animator.SetBool("isReloading", player.isReloading);
             }
 
             ApplySkinToRemotePlayer(go, player.skin);
@@ -178,6 +186,21 @@ public class ColyseusManager : MonoBehaviour
                 {
                     rd.animator.SetBool("isWalking", player.isWalking);
                     rd.lastIsWalking = player.isWalking;
+                    Debug.Log($"[{sessionId}] Animation: isWalking = {player.isWalking}");
+                }
+
+                if (rd.animator != null && rd.lastIsSprinting != player.isSprinting)
+                {
+                    rd.animator.SetBool("isSprinting", player.isSprinting);
+                    rd.lastIsSprinting = player.isSprinting;
+                    Debug.Log($"[{sessionId}] Animation: isSprinting = {player.isSprinting}");
+                }
+
+                if (rd.animator != null && rd.lastIsReloading != player.isReloading)
+                {
+                    rd.animator.SetBool("isReloading", player.isReloading);
+                    rd.lastIsReloading = player.isReloading;
+                    Debug.Log($"[{sessionId}] Animation: isReloading = {player.isReloading}");
                 }
 
                 if (rd.currentSkin != player.skin)
@@ -265,14 +288,14 @@ public class ColyseusManager : MonoBehaviour
 
         // Find Gun container - try multiple paths
         Transform gunContainer = null;
-        
+
         // Try direct child first (remote player structure)
         gunContainer = playerGo.transform.Find("Gun");
         if (gunContainer != null)
         {
             Debug.Log($"✓ Found Gun as direct child of {playerGo.name}");
         }
-        
+
         // Try under Spine1 (remote player structure)
         if (gunContainer == null)
         {
@@ -286,7 +309,7 @@ public class ColyseusManager : MonoBehaviour
                 }
             }
         }
-        
+
         // Try under Main Camera (local player structure)
         if (gunContainer == null)
         {
@@ -304,7 +327,7 @@ public class ColyseusManager : MonoBehaviour
                 }
             }
         }
-        
+
         // Recursive search as last resort
         if (gunContainer == null)
         {
@@ -436,10 +459,21 @@ public class ColyseusManager : MonoBehaviour
             Vector3 pos = localPlayer.position;
             float rotY = localPlayer.eulerAngles.y;
             bool isWalking = fpsController != null ? fpsController.GetIsMoving() : false;
+            bool isSprinting = fpsController != null ? fpsController.GetIsSprinting() : false;
+            bool isReloading = weaponManager != null ? weaponManager.GetIsReloading() : false;
+
+            // Only send if sprint or reload state changed
+            if (isSprinting != lastSentIsSprinting || isReloading != lastSentIsReloading)
+            {
+                lastSentIsSprinting = isSprinting;
+                lastSentIsReloading = isReloading;
+                Debug.Log($"[ANIM_SYNC] isSprinting: {isSprinting}, isReloading: {isReloading}");
+            }
 
             room.Send("move", new Dictionary<string, object> {
                 { "x", pos.x }, { "y", pos.y }, { "z", pos.z },
-                { "rotY", rotY }, { "isWalking", isWalking }
+                { "rotY", rotY }, { "isWalking", isWalking },
+                { "isSprinting", isSprinting }, { "isReloading", isReloading }
             });
         }
 
