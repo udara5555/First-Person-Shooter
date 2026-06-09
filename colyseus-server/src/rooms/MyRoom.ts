@@ -54,8 +54,8 @@ export class MyRoom extends Room {
             player.z = data.z ?? player.z;
             player.rotY = data.rotY ?? player.rotY;
             player.isWalking = data.isWalking ?? player.isWalking;
-            player.isSprinting = data.isSprinting; 
-            player.isReloading = data.isReloading;
+            player.isSprinting = data.isSprinting ?? player.isSprinting;
+            player.isReloading = data.isReloading ?? player.isReloading;
             //player.currentWeaponId = data.currentWeaponId ?? player.currentWeaponId;
         });
 
