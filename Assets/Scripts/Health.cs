@@ -12,19 +12,40 @@ public class Health : MonoBehaviour
 
     private AudioSource audioSource;
     private bool isDead = false;
+    private PlayerUI playerUI;
 
     void Start()
     {
         currentHealth = maxHealth;
         audioSource = GetComponent<AudioSource>();
+
+        // Find PlayerUI on the same GameObject
+        playerUI = GetComponent<PlayerUI>();
+
+        // If not found, try to find it in the scene
+        if (playerUI == null)
+        {
+            playerUI = Object.FindFirstObjectByType<PlayerUI>();
+        }
+
+        if (playerUI == null)
+        {
+            Debug.LogWarning("PlayerUI not found! Damage panel won't show.");
+        }
     }
 
     public void TakeDamage(float damage)
     {
-        if (isDead) return; // Prevent multiple death calls
+        if (isDead) return;
 
         currentHealth -= damage;
         Debug.Log($"{gameObject.name} took {damage} damage. Health: {currentHealth}/{maxHealth}");
+
+        // Show damage panel if this is the local player
+        if (playerUI != null)
+        {
+            playerUI.ShowDamagePanel();
+        }
 
         if (currentHealth <= 0)
         {
@@ -34,7 +55,7 @@ public class Health : MonoBehaviour
 
     void Die()
     {
-        if (isDead) return; // Prevent multiple death calls
+        if (isDead) return;
         isDead = true;
 
         Debug.Log($"{gameObject.name} died!");

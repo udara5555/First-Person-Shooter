@@ -12,6 +12,11 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private RawImage skinImage;
     [SerializeField] private TextMeshProUGUI gunNameText;
     [SerializeField] private TextMeshProUGUI ammoCountText;
+    [SerializeField] private GameObject damagePanel;
+
+    [Header("Damage Panel Settings")]
+    [SerializeField] private float damagePanelDisplayDuration = 0.5f;
+    [SerializeField] private float damagePanelFadeDuration = 0.3f;
 
     [Header("Skin Textures")]
     [SerializeField] private Texture[] skinTextures;
@@ -26,6 +31,8 @@ public class PlayerUI : MonoBehaviour
     private Health playerHealth;
     private WeaponManager weaponManager;
     private Gun currentGun;
+    private float damagePanelTimer = 0f;
+    private CanvasGroup damagePanelCanvasGroup;
 
     void Start()
     {
@@ -53,6 +60,25 @@ public class PlayerUI : MonoBehaviour
             Debug.LogError("WeaponManager not found!");
         }
 
+        // Setup damage panel
+        if (damagePanel != null)
+        {
+            damagePanelCanvasGroup = damagePanel.GetComponent<CanvasGroup>();
+            if (damagePanelCanvasGroup == null)
+            {
+                damagePanelCanvasGroup = damagePanel.AddComponent<CanvasGroup>();
+            }
+
+            // Ensure panel is initially disabled
+            damagePanel.SetActive(false);
+            damagePanelCanvasGroup.alpha = 0f;
+            Debug.Log("DamagePanel initialized!");
+        }
+        else
+        {
+            Debug.LogWarning("DamagePanel not assigned in PlayerUI!");
+        }
+
         // Display player name
         if (playerNameText != null)
         {
@@ -76,6 +102,9 @@ public class PlayerUI : MonoBehaviour
 
         // Update gun UI every frame
         UpdateGunUI();
+
+        // Update damage panel fade
+        UpdateDamagePanel();
     }
 
     private void UpdateHealthUI()
@@ -127,6 +156,41 @@ public class PlayerUI : MonoBehaviour
             int maxAmmo = gun.GetMagazineSize();
             ammoCountText.text = $"{currentAmmo}/{maxAmmo}";
         }
+    }
+
+    private void UpdateDamagePanel()
+    {
+        if (damagePanelCanvasGroup == null || damagePanel == null) return;
+
+        if (damagePanelTimer > 0)
+        {
+            damagePanelTimer -= Time.deltaTime;
+
+            // Fade out after display duration
+            if (damagePanelTimer < damagePanelFadeDuration)
+            {
+                damagePanelCanvasGroup.alpha = damagePanelTimer / damagePanelFadeDuration;
+            }
+        }
+        else
+        {
+            damagePanelCanvasGroup.alpha = 0f;
+            damagePanel.SetActive(false);
+        }
+    }
+
+    public void ShowDamagePanel()
+    {
+        if (damagePanel == null || damagePanelCanvasGroup == null)
+        {
+            Debug.LogWarning("Damage panel is not assigned!");
+            return;
+        }
+
+        // Enable the panel
+        damagePanel.SetActive(true);
+        damagePanelCanvasGroup.alpha = 1f;
+        damagePanelTimer = damagePanelDisplayDuration + damagePanelFadeDuration;
     }
 
     private void ApplySkinToUI()
