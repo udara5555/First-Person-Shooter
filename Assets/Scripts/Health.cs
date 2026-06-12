@@ -101,6 +101,12 @@ public class Health : MonoBehaviour
 
     public void SetHealth(float newHealth)
     {
+        // Show damage panel if health decreased (hit by another player)
+        if (newHealth < currentHealth && playerUI != null)
+        {
+            playerUI.ShowDamagePanel();
+        }
+
         currentHealth = newHealth;
         Debug.Log($"[HEALTH] {gameObject.name} health set to {currentHealth}/{maxHealth}");
 
