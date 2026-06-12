@@ -1,4 +1,4 @@
-﻿using Colyseus;
+using Colyseus;
 using Colyseus.Schema;
 using System.Collections.Generic;
 using UnityEngine;
@@ -257,6 +257,14 @@ public class ColyseusManager : MonoBehaviour
             if (message.playerId == room.SessionId && localPlayerHealth != null)
             {
                 localPlayerHealth.SetHealth(message.health);
+            }
+        });
+
+        room.OnMessage<PlayerShootMessage>("playerShoot", (message) =>
+        {
+            if (remotes.TryGetValue(message.playerId, out var rd) && rd.remoteComponent != null)
+            {
+                rd.remoteComponent.PlayShootEffects();
             }
         });
     }
@@ -518,4 +526,16 @@ public class WeaponSwitchedMessage
 {
     public string playerId;
     public string weaponId;
+}
+
+public class PlayerShootMessage
+{
+    public string playerId;
+    public string weaponId;
+    public float originX;
+    public float originY;
+    public float originZ;
+    public float dirX;
+    public float dirY;
+    public float dirZ;
 }

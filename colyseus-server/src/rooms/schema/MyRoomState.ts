@@ -8,6 +8,7 @@ export class FPSPlayer extends Schema {
     @type("boolean") isWalking = false;
     @type("boolean") isSprinting = false;
     @type("boolean") isReloading = false;
+    @type("boolean") isShooting = false;
     @type("float32") health: number = 100;
     @type("float32") maxHealth: number = 100;
     @type("string") skin: string = "default";

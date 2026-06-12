@@ -34,7 +34,7 @@ export class MyRoom extends Room {
                 console.log("PLAYER ALREADY JOINED:", client.sessionId);
                 return;
             }
-            
+
             console.log("PLAYER JOINED GAME:", client.sessionId);
             const player = new FPSPlayer();
             player.x = 0;
@@ -71,7 +71,7 @@ export class MyRoom extends Room {
             if (!player) return;
             player.currentWeaponId = data.weaponId || "ak47";
             console.log("PLAYER SWITCHED WEAPON:", client.sessionId, "to", player.currentWeaponId);
-            
+
             this.broadcast("weaponSwitched", {
                 playerId: client.sessionId,
                 weaponId: player.currentWeaponId
@@ -92,13 +92,38 @@ export class MyRoom extends Room {
             console.log("PLAYER RELOAD STATE:", client.sessionId, "isReloading:", player.isReloading);
         });
 
+        this.onMessage("shoot", (client: Client, data: any) => {
+            const player = this.s.players.get(client.sessionId);
+            if (!player) return;
+
+            player.isShooting = true;
+
+            // Broadcast shoot event to all OTHER clients for muzzle flash + sound
+            this.broadcast("playerShoot", {
+                playerId: client.sessionId,
+                weaponId: player.currentWeaponId,
+                // Shoot origin and direction for remote VFX positioning
+                originX: data.originX ?? player.x,
+                originY: data.originY ?? player.y,
+                originZ: data.originZ ?? player.z,
+                dirX: data.dirX ?? 0,
+                dirY: data.dirY ?? 0,
+                dirZ: data.dirZ ?? 1,
+            }, { except: client });
+
+            // Reset isShooting flag after a short delay
+            setTimeout(() => {
+                player.isShooting = false;
+            }, 50);
+        });
+
         this.onMessage("damage", (client: Client, data: any) => {
             const targetPlayer = this.s.players.get(data.targetPlayerId);
             if (!targetPlayer) return;
-            
+
             const damageAmount = Math.max(0, data.damage);
             targetPlayer.health = Math.max(0, targetPlayer.health - damageAmount);
-            
+
             this.broadcast("playerDamaged", {
                 playerId: data.targetPlayerId,
                 health: targetPlayer.health,
@@ -107,7 +132,7 @@ export class MyRoom extends Room {
 
             if (targetPlayer.health <= 0) {
                 console.log("PLAYER DIED:", data.targetPlayerId);
-                
+
                 this.broadcast("playerDied", {
                     playerId: data.targetPlayerId
                 });
@@ -123,12 +148,12 @@ export class MyRoom extends Room {
         this.onMessage("playerKilled", (client: Client, data: any) => {
             const playerId = data.playerId;
             const player = this.s.players.get(playerId);
-            
+
             if (!player) return;
-            
+
             console.log("PLAYER KILLED:", playerId);
             player.health = 0;
-            
+
             this.broadcast("playerDied", {
                 playerId: playerId
             });
@@ -143,7 +168,7 @@ export class MyRoom extends Room {
 
     onJoin(client: Client, options: any) {
         console.log("PLAYER JOINED ROOM:", client.sessionId);
-        
+
         // Store the skin from join options
         if (options.skin) {
             this.playerSkins.set(client.sessionId, options.skin);

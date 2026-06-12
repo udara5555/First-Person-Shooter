@@ -8,10 +8,106 @@ public class RemotePlayerComponent : MonoBehaviour
     private Canvas healthBarCanvas;
     private Image healthBarFill;
     private float maxHealth = 100f;
+    private AudioSource audioSource;
 
     void Start()
     {
         CreateHealthBar();
+
+        // Add AudioSource for remote shoot sounds
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1f; // Full 3D sound
+        audioSource.minDistance = 2f;
+        audioSource.maxDistance = 40f;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
+    }
+
+    /// <summary>
+    /// Plays muzzle flash and shoot sound on this remote player's currently active weapon.
+    /// Called by ColyseusManager when a "playerShoot" message arrives.
+    /// </summary>
+    public void PlayShootEffects()
+    {
+        // Find the active Gun script on the remote player's weapon
+        Gun activeGun = GetActiveGun();
+        if (activeGun == null)
+        {
+            Debug.LogWarning($"[RemoteShoot] No active Gun found on remote player {SessionId}");
+            return;
+        }
+
+        // Play muzzle flash
+        if (activeGun.muzzleFlash != null && activeGun.shootPoint != null)
+        {
+            var flash = Instantiate(activeGun.muzzleFlash, activeGun.shootPoint.position, activeGun.shootPoint.rotation);
+            Destroy(flash, 0.1f);
+        }
+
+        // Play shoot sound
+        if (activeGun.shootSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(activeGun.shootSound);
+        }
+
+        // Trigger shoot animation
+        var animator = GetComponent<Animator>();
+        if (animator != null)
+        {
+            try { animator.SetTrigger("Shoot"); }
+            catch (System.Exception) { /* Parameter doesn't exist, ignore */ }
+        }
+    }
+
+    /// <summary>
+    /// Finds the currently active Gun script on this remote player.
+    /// Searches through the Gun container for an active weapon with a Gun component.
+    /// </summary>
+    private Gun GetActiveGun()
+    {
+        // Find Gun container (search hierarchy)
+        Transform gunContainer = FindGunContainer();
+        if (gunContainer == null) return null;
+
+        // Find the active child with a Gun component
+        for (int i = 0; i < gunContainer.childCount; i++)
+        {
+            var child = gunContainer.GetChild(i);
+            if (child.gameObject.activeInHierarchy)
+            {
+                var gun = child.GetComponent<Gun>();
+                if (gun == null)
+                    gun = child.GetComponentInChildren<Gun>();
+                if (gun != null)
+                    return gun;
+            }
+        }
+
+        return null;
+    }
+
+    private Transform FindGunContainer()
+    {
+        // Try direct child
+        Transform gunContainer = transform.Find("Gun");
+        if (gunContainer != null) return gunContainer;
+
+        // Try under Spine1
+        Transform spine1 = transform.Find("Spine1");
+        if (spine1 != null)
+        {
+            gunContainer = spine1.Find("Gun");
+            if (gunContainer != null) return gunContainer;
+        }
+
+        // Recursive search as last resort
+        Transform[] allTransforms = GetComponentsInChildren<Transform>();
+        foreach (Transform t in allTransforms)
+        {
+            if (t.name == "Gun")
+                return t;
+        }
+
+        return null;
     }
 
     void CreateHealthBar()

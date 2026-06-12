@@ -162,6 +162,21 @@ public class Gun : MonoBehaviour
         if (shootSound != null && audioSource != null)
             audioSource.PlayOneShot(shootSound);
 
+        // Notify server so other players see muzzle flash + hear sound
+        var colyseusRoom = ColyseusManager.Instance?.GetRoom();
+        if (colyseusRoom != null)
+        {
+            colyseusRoom.Send("shoot", new System.Collections.Generic.Dictionary<string, object>
+            {
+                { "originX", shootPoint.position.x },
+                { "originY", shootPoint.position.y },
+                { "originZ", shootPoint.position.z },
+                { "dirX", mainCamera.transform.forward.x },
+                { "dirY", mainCamera.transform.forward.y },
+                { "dirZ", mainCamera.transform.forward.z }
+            });
+        }
+
         // Raycast from camera center (crosshair position)
         Vector3 rayOrigin = mainCamera.transform.position;
         Vector3 rayDirection = mainCamera.transform.forward;
