@@ -428,6 +428,10 @@ public class ColyseusManager : MonoBehaviour
     {
         Time.timeScale = 1f;
 
+        // Re-enable cursor for lobby UI
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (room != null)
         {
             room.Leave();
