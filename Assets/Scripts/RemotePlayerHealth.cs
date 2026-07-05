@@ -60,6 +60,23 @@ public class RemotePlayerHealth : MonoBehaviour
             }
         }
 
+        var cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
+        var cols = GetComponents<Collider>();
+        foreach (var c in cols) c.enabled = false;
+
+        // Trigger ragdoll
+        var ragdoll = GetComponent<RagdollController>();
+        if (ragdoll != null) ragdoll.Die();
+
+        StartCoroutine(DeathSequence());
+    }
+
+    private System.Collections.IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(5f);
+
         // Just destroy this remote player from the scene (don't return to lobby)
         Destroy(gameObject);
     }

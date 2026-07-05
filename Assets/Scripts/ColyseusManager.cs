@@ -242,12 +242,16 @@ public class ColyseusManager : MonoBehaviour
         {
             if (message.playerId == room.SessionId)
             {
-                OnLocalPlayerDied();
+                // Local player death is handled by Health.cs (which adds a 5 second delay)
             }
             else if (remotes.TryGetValue(message.playerId, out var rd))
             {
                 if (rd.go != null)
-                    Destroy(rd.go);
+                {
+                    var health = rd.go.GetComponent<RemotePlayerHealth>();
+                    if (health != null) health.TakeDamage(99999); // Force death for ragdoll
+                    else Destroy(rd.go);
+                }
                 remotes.Remove(message.playerId);
             }
         });

@@ -79,6 +79,30 @@ public class Health : MonoBehaviour
             }
         }
 
+        // Disable controls so player can't move or shoot while dead
+        var fpsController = GetComponent<FPSController>();
+        if (fpsController != null) fpsController.enabled = false;
+        
+        var weaponManager = GetComponent<WeaponManager>();
+        if (weaponManager != null) weaponManager.enabled = false;
+
+        var cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
+        var cols = GetComponents<Collider>();
+        foreach (var c in cols) c.enabled = false;
+
+        // Trigger ragdoll
+        var ragdoll = GetComponent<RagdollController>();
+        if (ragdoll != null) ragdoll.Die();
+
+        StartCoroutine(DeathSequence());
+    }
+
+    private System.Collections.IEnumerator DeathSequence()
+    {
+        yield return new WaitForSeconds(5f);
+
         // Return to lobby (the server will broadcast playerDied to all clients)
         if (ColyseusManager.Instance != null)
         {
